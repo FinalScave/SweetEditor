@@ -57,7 +57,7 @@ using PropertiesMap = hash_map<UrlTableProperties *, string>;
 enum UrlTableErrors { ...
 ```
 ## 变量命名
-变量 (包括函数参数) 和数据成员名一律小写, 单词之间用下划线连接. 类的私有成员变量以下划线结尾, 类的公开变量和结构体内部的变量的就不用。
+变量 (包括函数参数) 和数据成员名一律小写, 单词之间用下划线连接. 类的成员变量以'm_'开头, 类的公开变量和结构体内部的变量的就不用。
 ### 普通变量命名
 ```
 string table_name;  // 好 - 用下划线.
@@ -71,11 +71,11 @@ class TableInfo {
 ...
 public:
    string name_end;     // 好
-   string name_start_;  // 坏，public变量不加_
+   string m_name_start_;  // 坏，public变量不加 m_
 private:
-   string table_name_;  // 好 - 后加下划线.
-   string tablename_;   // 好.
-   static Pool<TableInfo>* pool_;  // 好.
+   string m_table_name;  // 好 - 前面加 m_
+   string tablename_;   // 差，没有加 m_
+   static Pool<TableInfo>* m_pool_;  // 好，末尾下划线可选
 };
 ```
 ### 结构体成员变量

@@ -1,3 +1,6 @@
+//
+// Created by Scave on 2025/12/1.
+//
 #ifndef SWEETEDITOR_EDITOR_CORE_H
 #define SWEETEDITOR_EDITOR_CORE_H
 

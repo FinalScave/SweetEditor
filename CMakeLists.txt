@@ -25,8 +25,8 @@ set(3DPARTY_DIR ${CMAKE_PROJECT_DIR}/3dparty)
 # header search path
 list(APPEND INCLUDE_DIRS
         ${SRC_DIR}/include
-        ${SRC_DIR}/core
         ${3DPARTY_DIR}/include
+        ${3DPARTY_DIR}/include/simdutf
 )
 include_directories(${INCLUDE_DIRS})
 
@@ -108,12 +108,16 @@ endfunction()
 if (ANDROID)
     find_library(ANDROID_LIB android)
     find_library(LOG_LIB log)
+    add_platform_library(simdutf libsimdutf.a STATIC)
     set(LINK_LIB ${LINK_LIB} ${ANDROID_LIB} ${LOG_LIB})
 elseif (OHOS)
+    add_platform_library(simdutf libsimdutf.a STATIC)
     set(LINK_LIB ${LINK_LIB} libace_napi.z.so libhilog_ndk.z.so)
 elseif (WIN32)
+    add_platform_library(simdutf libsimdutf.a STATIC)
     set(LINK_LIB ${LINK_LIB} ws2_32)
 elseif (EMSCRIPTEN)
+    add_platform_library(simdutf libsimdutf.a STATIC)
 endif ()
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LINK_LIB})
 
