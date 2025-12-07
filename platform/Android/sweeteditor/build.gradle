@@ -1,0 +1,96 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.maven.publisher)
+}
+apply plugin: "signing"
+
+description = "Cross-platform code editor"
+group = "com.qiplat"
+version = "0.0.1"
+
+android {
+    namespace 'com.qiplat.sweeteditor'
+    compileSdk 34
+    ndkVersion '28.2.13676358'
+
+    defaultConfig {
+        minSdk 21
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_static"
+                arguments "-DANDROID=ON"
+            }
+        }
+        ndk {
+            abiFilters "arm64-v8a", "x86_64"
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    externalNativeBuild {
+        cmake {
+            path "../../../CMakeLists.txt"
+        }
+    }
+}
+
+dependencies {
+    implementation libs.annotation
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}
+
+javadoc {
+    failOnError false
+    options {
+        locale("zh_CN")
+        encoding("utf-8")
+        links("http://docs.oracle.com/javase/7/docs/api")
+    }
+}
+
+signing {
+    useGpgCmd()
+}
+
+centralPortal {
+    username = rootProject.property("sonatype.username")
+    password = rootProject.property("sonatype.password")
+    name = "sweetline"
+
+    pom {
+        url = "https://github.com/FinalScave/SweetEditor"
+        licenses {
+            license {
+                name = "MIT License"
+                url = "https://www.mit-license.org"
+            }
+        }
+        developers {
+            developer {
+                name = "Scave"
+                email = "iscave@163.com"
+                organization = "Mobile IPE"
+                organizationUrl = "https://github.com/mobile-ipe"
+            }
+        }
+        scm {
+            connection = "scm:git:https://github.com/FinalScave/SweetEditor.git"
+            developerConnection = "scm:git:https://github.com/FinalScave/SweetEditor"
+            url = "https://github.com/FinalScave/SweetEditor"
+        }
+    }
+}

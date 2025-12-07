@@ -8,6 +8,8 @@
 
 #include <iostream>
 
+#include "logging.h"
+
 namespace NS_SWEETEDITOR {
   // ================================================== Document ===================================================
   Document::Document(U8String&& original_string): m_original_buffer_(makeUPtr<U8StringBuffer>(std::move(original_string))) {
@@ -106,6 +108,7 @@ namespace NS_SWEETEDITOR {
   }
 
   void Document::deleteU8Text(const TextRange& range) {
+    LOGD("dddd", "")
     size_t start_byte = getByteOffsetFromPosition(range.start);
     size_t byte_length = getByteOffsetFromPosition(range.end) - start_byte;
     deleteU8Text(start_byte, byte_length);

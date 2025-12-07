@@ -14,6 +14,7 @@ endif ()
 # options
 option(BUILD_TESTING "Includes testing source for unit tests" ON)
 add_definitions(-DTESTS_DIR="${CMAKE_SOURCE_DIR}/tests")
+add_definitions(-DENABLE_LOG=1)
 add_definitions(-DSWEETEDITOR_DEBUG=1)
 
 # initial config
@@ -28,15 +29,12 @@ list(APPEND INCLUDE_DIRS
         ${3DPARTY_DIR}/include
         ${3DPARTY_DIR}/include/simdutf
 )
-include_directories(${INCLUDE_DIRS})
-
-# core source files
-file(GLOB_RECURSE CORE_SOURCE_FILES ${SRC_DIR}/core/*.*)
 
 # platform special
 set(PLATFORM_FILES)
 if (ANDROID)
-    #file(GLOB_RECURSE PLATFORM_FILES ${CMAKE_PROJECT_DIR}/platform/Android/sweeteditor/src/main/cpp/*.*)
+    file(GLOB_RECURSE PLATFORM_FILES ${CMAKE_PROJECT_DIR}/platform/Android/sweeteditor/src/main/cpp/*.*)
+    list(APPEND INCLUDE_DIRS ${CMAKE_PROJECT_DIR}/platform/Android/sweeteditor/src/main/cpp)
     add_definitions(-DANDROID)
 elseif (OHOS)
     #file(GLOB_RECURSE PLATFORM_FILES ${CMAKE_PROJECT_DIR}/platform/OHOS/sweeteditor/src/main/cpp/*.*)
@@ -61,6 +59,9 @@ elseif (EMSCRIPTEN)
             "-s EXPORTED_RUNTIME_METHODS=[\"FS\"]"
     )
 endif ()
+
+include_directories(${INCLUDE_DIRS})
+file(GLOB_RECURSE CORE_SOURCE_FILES ${SRC_DIR}/core/*.*)
 
 # project shared/dynamic lib
 if (STATIC_LIB)
