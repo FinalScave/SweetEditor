@@ -33,9 +33,11 @@ namespace NS_SWEETEDITOR {
     /// 当前行在全文中的起始字符偏移，dirty时更新
     size_t start_char {0};
     /// 当前行文本的缓存（不包括换行符），dirty时更新
-    U16String cached_text;
-    /// 当前快照是否已经被标记为dirty，需要刷新
-    bool is_dirty {false};
+    U8String cached_text;
+    /// 当前行文本数据是否已经被标记为dirty，需要刷新
+    bool is_char_dirty {false};
+    /// 当前行的渲染高度
+    float height {-1};
   };
 
   /// 编辑器的文本对象
@@ -50,9 +52,6 @@ namespace NS_SWEETEDITOR {
     /// 获取当前文档的全部文本内容（UTF8编码）
     virtual U8String getU8Text();
 
-    /// 获取当前文档的全部文本内容（UTF16编码）
-    virtual U16String getU16Text();
-
     /// 获取当前文档的总行数
     /// @return 总行数
     size_t getLineCount() const;
@@ -61,11 +60,6 @@ namespace NS_SWEETEDITOR {
     /// @param line 行号
     /// @return 指定行的文本内容
     U8String getLineU8Text(size_t line) const;
-
-    /// 获取指定行的UTF16文本
-    /// @param line 行号
-    /// @return 指定行的文本内容
-    const U16String& getLineU16Text(size_t line);
 
     /// 获取指定行的column数量（字符数）
     /// @param line 行号
@@ -95,6 +89,20 @@ namespace NS_SWEETEDITOR {
     /// @param range 范围
     /// @param text 替换后的文本
     void replaceU8Text(const TextRange& range, const U8String& text);
+
+    /// 计算在文本中指定区域有多少字符
+    /// @param start_byte 起始字节偏移
+    /// @param byte_length 字节长度
+    /// @return 字符数量
+    size_t countChars(size_t start_byte, size_t byte_length) const;
+
+    /// 获取所有逻辑行数据
+    Vector<LogicalLine>& getLogicalLines();
+
+    /// 更新被标记为dirty的行
+    /// @param index 行号
+    /// @param logical_line 逻辑行数据
+    void updateDirtyLine(size_t index, LogicalLine& logical_line);
   protected:
 		/// 原始内容的Buffer（只读）
     UPtr<Buffer> m_original_buffer_;
@@ -114,12 +122,10 @@ namespace NS_SWEETEDITOR {
     void deleteU8Text(size_t start_byte, size_t byte_length);
     void updateLogicalLinesByInsertText(size_t start_byte, const U8String& text);
     void updateLogicalLinesByDeleteText(size_t start_byte, size_t byte_length);
-    void updateDirtyLine(size_t index, LogicalLine& logical_line) const;
     size_t getByteOffsetFromPosition(const TextPosition& position) const;
     size_t getLineFromByteOffset(size_t byte_offset) const;
     size_t getLineFromCharIndex(size_t char_index) const;
     size_t getByteLengthOfLine(size_t line) const;
-    size_t countChars(size_t start_byte, size_t byte_length) const;
     const char* getSegmentData(const BufferSegment& segment) const;
   };
 }

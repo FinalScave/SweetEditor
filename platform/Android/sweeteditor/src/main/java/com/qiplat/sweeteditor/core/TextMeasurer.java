@@ -26,7 +26,11 @@ public class TextMeasurer {
         mTextPaint.setTextSize(mTextSize * mScale);
     }
 
-    float measureTextWidth(String text) {
+    float measureWidth(String text, boolean isBold) {
         return mTextPaint.measureText(text);
+    }
+
+    float getFontHeight() {
+        return mTextPaint.getFontMetrics().bottom - mTextPaint.getFontMetrics().top;
     }
 }

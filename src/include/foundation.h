@@ -16,9 +16,7 @@ namespace NS_SWEETEDITOR {
 
     bool operator<(const TextPosition& other) const;
     bool operator==(const TextPosition& other) const;
-#ifdef SWEETEDITOR_DEBUG
-    void dump() const;
-#endif
+    U8String dump() const;
   };
 
   /// 文字的范围区间描述
@@ -28,9 +26,39 @@ namespace NS_SWEETEDITOR {
 
     bool operator==(const TextRange& other) const;
     bool contains(const TextPosition& pos) const;
-#ifdef SWEETEDITOR_DEBUG
-    void dump() const;
-#endif
+    U8String dump() const;
+  };
+
+  /// 横纵坐标数据包装
+  struct PointF {
+    float x {0};
+    float y {0};
+
+    float distance(const PointF& other) const;
+    U8String dump() const;
+  };
+
+  /// 编辑器区域定义
+  struct Viewport {
+    /// 编辑器宽度
+    float width {0};
+    /// 编辑器高度
+    float height {0};
+
+    bool valid() const;
+    U8String dump() const;
+  };
+
+  /// 编辑器状态定义
+  struct ViewState {
+    /// 缩放系数
+    float scale {1};
+    /// 水平滚动长度
+    float scroll_x {0};
+    /// 垂直滚动长度
+    float scroll_y {0};
+
+    U8String dump() const;
   };
 }
 

@@ -47,6 +47,7 @@ android {
 }
 
 dependencies {
+    implementation libs.gson
     implementation libs.annotation
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

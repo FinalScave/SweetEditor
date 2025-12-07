@@ -14,10 +14,10 @@
   #else
     #include <iostream>
     #include "utility.h"
-    #define LOGD(...) std::cout << "[" << LOG_TAG << "] " << __FILE_NAME__ << ":" << __FUNCTION__ << StrUtil::formatString(__VA_ARGS__) << std::endl;
-    #define LOGI(...) std::cout << StrUtil::formatString(__VA_ARGS__) << std::endl;
-    #define LOGW(...) std::cout << StrUtil::formatString(__VA_ARGS__) << std::endl;
-    #define LOGE(...) std::cerr << StrUtil::formatString(__VA_ARGS__) << std::endl;
+    #define LOGD(...) std::cout << "[" << LOG_TAG << "] \"" << __FILE_NAME__ << "\"-" << __FUNCTION__ << ":" << __LINE__ << " " << StrUtil::formatString(__VA_ARGS__) << std::endl;
+    #define LOGI(...) std::cout << "[" << LOG_TAG << "] \"" << __FILE_NAME__ << "\"-" << __FUNCTION__ << ":" << __LINE__ << " " << StrUtil::formatString(__VA_ARGS__) << std::endl;
+    #define LOGW(...) std::cout << "[" << LOG_TAG << "] \"" << __FILE_NAME__ << "\"-" << __FUNCTION__ << ":" << __LINE__ << " " << StrUtil::formatString(__VA_ARGS__) << std::endl;
+    #define LOGE(...) std::cerr << "[" << LOG_TAG << "] \"" << __FILE_NAME__ << "\"-" << __FUNCTION__ << ":" << __LINE__ << " " << StrUtil::formatString(__VA_ARGS__) << std::endl;
   #endif
 #else
   #define LOGD(...)

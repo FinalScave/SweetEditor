@@ -1,16 +1,10 @@
 //
 // Created by Scave on 2025/12/2.
 //
-#ifdef SWEETEDITOR_DEBUG
-#include <iostream>
-#endif
-
-#include <nlohmann/json.hpp>
+#include <cmath>
 #include "foundation.h"
 
 namespace NS_SWEETEDITOR {
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextPosition, line, column);
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextRange, start, end);
   // ===================================== TextPosition ============================================
   bool TextPosition::operator<(const TextPosition& other) const {
     if (line != other.line) return line < other.line;
@@ -21,12 +15,9 @@ namespace NS_SWEETEDITOR {
     return line == other.line && column == other.column;
   }
 
-#ifdef SWEETEDITOR_DEBUG
-  void TextPosition::dump() const {
-    const nlohmann::json json = *this;
-    std::cout << json.dump(2) << std::endl;
+  U8String TextPosition::dump() const {
+    return "TouchConfig {line = " + std::to_string(line) + ", column = " + std::to_string(column) + "}";
   }
-#endif
 
   // ===================================== TextRange ============================================
   bool TextRange::operator==(const TextRange& other) const {
@@ -37,10 +28,29 @@ namespace NS_SWEETEDITOR {
     return !(pos < start) && (pos < end || pos == end);
   }
 
-#ifdef SWEETEDITOR_DEBUG
-  void TextRange::dump() const {
-    const nlohmann::json json = *this;
-    std::cout << json.dump(2) << std::endl;
+  U8String TextRange::dump() const {
+    return "TextRange {start = " + start.dump() + ", end = " + end.dump() + "}";
   }
-#endif
+
+  // ===================================== PointF ============================================
+  float PointF::distance(const PointF& other) const {
+    return sqrtf(powf(other.x - x, 2) + powf(other.y - y, 2));
+  }
+
+  U8String PointF::dump() const {
+    return "PointF {x = " + std::to_string(x) + ", y = " + std::to_string(y) + "}";
+  }
+
+  bool Viewport::valid() const {
+    return width > 1 && height > 1;
+  }
+
+  U8String Viewport::dump() const {
+    return "Viewport {width = " + std::to_string(width) + ", height = " + std::to_string(height) + "}";
+  }
+
+  U8String ViewState::dump() const {
+    return "ViewState {scale = " + std::to_string(scale) + ", scroll_x = " + std::to_string(scroll_x) + ", scroll_y = " + std::to_string(scroll_y) + "}";
+  }
+
 }

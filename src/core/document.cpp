@@ -6,10 +6,6 @@
 #include <simdutf/simdutf.h>
 #include "document.h"
 
-#include <iostream>
-
-#include "logging.h"
-
 namespace NS_SWEETEDITOR {
   // ================================================== Document ===================================================
   Document::Document(U8String&& original_string): m_original_buffer_(makeUPtr<U8StringBuffer>(std::move(original_string))) {
@@ -30,18 +26,6 @@ namespace NS_SWEETEDITOR {
     return getU8Text(0, m_total_bytes_);
   }
 
-  U16String Document::getU16Text() {
-    U8String u8_text = getU8Text(0, m_total_bytes_);
-    size_t u16_len = simdutf::utf16_length_from_utf8(u8_text.data(), u8_text.length());
-    U16String u16_text;
-    u16_text.resize(u16_len);
-    if (simdutf::convert_utf8_to_utf16(u8_text.data(), u8_text.length(), reinterpret_cast<char16_t*>(u16_text.data())) == u16_len) {
-      return u16_text;
-    } else {
-      return {};
-    }
-  }
-
   size_t Document::getLineCount() const {
     return m_logical_lines_.size();
   }
@@ -52,14 +36,6 @@ namespace NS_SWEETEDITOR {
     }
     const size_t byte_length = getByteLengthOfLine(line);
     return getU8Text(m_logical_lines_[line].start_byte, byte_length);
-  }
-
-  const U16String& Document::getLineU16Text(size_t line) {
-    if (line >= m_logical_lines_.size()) {
-      throw std::out_of_range("Document::getLineU16Text line index out of range");
-    }
-    updateDirtyLine(line, m_logical_lines_[line]);
-    return m_logical_lines_[line].cached_text;
   }
 
   uint32_t Document::getLineColumns(size_t line) {
@@ -108,7 +84,6 @@ namespace NS_SWEETEDITOR {
   }
 
   void Document::deleteU8Text(const TextRange& range) {
-    LOGD("dddd", "")
     size_t start_byte = getByteOffsetFromPosition(range.start);
     size_t byte_length = getByteOffsetFromPosition(range.end) - start_byte;
     deleteU8Text(start_byte, byte_length);
@@ -129,13 +104,13 @@ namespace NS_SWEETEDITOR {
 
   void Document::rebuildLogicalLines() {
     m_logical_lines_.clear();
-    m_logical_lines_.push_back({0});
+    m_logical_lines_.push_back({0, 0, {}, true});
     const char* data = m_original_buffer_->data();
     const size_t size = m_original_buffer_->size();
     size_t i = 0;
     for (i = 0; i < size; ++i) {
       if (data[i] == '\n') {
-        m_logical_lines_.push_back({i + 1});
+        m_logical_lines_.push_back({i + 1, 0, {}, true});
       }
     }
   }
@@ -276,12 +251,46 @@ namespace NS_SWEETEDITOR {
     updateLogicalLinesByDeleteText(start_byte, byte_length);
   }
 
+  size_t Document::countChars(size_t start_byte, size_t byte_length) const {
+    U8String text = getU8Text(start_byte, byte_length);
+    return simdutf::count_utf8(text.data(), text.length());
+  }
+
+  Vector<LogicalLine>& Document::getLogicalLines() {
+    return m_logical_lines_;
+  }
+
+  void Document::updateDirtyLine(size_t line, LogicalLine& logical_line) {
+    if (logical_line.is_char_dirty) {
+      const size_t byte_length = getByteLengthOfLine(line);
+      U8String text = getU8Text(logical_line.start_byte, byte_length);
+      logical_line.cached_text = std::move(text);
+      if (line > 0) {
+        LogicalLine& prev_line = m_logical_lines_[line - 1];
+        if (prev_line.is_char_dirty) {
+          U8String prev_texts = getU8Text(0, prev_line.start_byte);
+          const size_t prev_chars_count = simdutf::count_utf8(prev_texts.data(), prev_texts.length());
+          prev_line.start_char = prev_chars_count;
+        }
+        const size_t prev_byte_length = getByteLengthOfLine(line - 1);
+        U8String prev_line_text = getU8Text(prev_line.start_byte, prev_byte_length);
+        logical_line.start_char = prev_line.start_char + simdutf::count_utf8(prev_line_text.data(), prev_line_text.length());
+      } else {
+        logical_line.start_char = 0;
+      }
+      logical_line.is_char_dirty = false;
+    }
+  }
+
   void Document::updateLogicalLinesByInsertText(size_t start_byte, const U8String& text) {
     const size_t line = getLineFromByteOffset(start_byte);
     Vector<LogicalLine> new_lines;
     for (size_t i = 0; i < text.size(); ++i) {
       if (text[i] == '\n') {
-        new_lines.push_back({start_byte + i + 1});
+        LogicalLine logical_line;
+        logical_line.start_byte = start_byte + i + 1;
+        logical_line.is_char_dirty = true;
+        new_lines.push_back(logical_line);
       }
     }
     if (!new_lines.empty()) {
@@ -293,6 +302,8 @@ namespace NS_SWEETEDITOR {
     size_t start_shift_line = line + 1 + new_lines.size();
     for (size_t i = start_shift_line; i < m_logical_lines_.size(); ++i) {
       m_logical_lines_[i].start_byte += shift_amount;
+      m_logical_lines_[i].is_char_dirty = true;
+      m_logical_lines_[i].height = -1;
     }
   }
 
@@ -328,25 +339,8 @@ namespace NS_SWEETEDITOR {
     // 位移后续行，被删除区间后面的所有行，偏移量都要减去 length
     for (size_t i = line_to_remove; i < m_logical_lines_.size(); ++i) {
       m_logical_lines_[i].start_byte -= byte_length;
-    }
-  }
-
-  void Document::updateDirtyLine(size_t line, LogicalLine& logical_line) const {
-    if (logical_line.is_dirty) {
-      const size_t byte_length = getByteLengthOfLine(line);
-      U8String text = getU8Text(logical_line.start_byte, byte_length);
-      size_t u16_len = simdutf::utf16_length_from_utf8(text.data(), text.length());
-      U16String u16_text;
-      u16_text.resize(u16_len);
-      if (simdutf::convert_utf8_to_utf16(text.data(), text.length(), reinterpret_cast<char16_t*>(u16_text.data())) == u16_len) {
-        logical_line.cached_text = std::move(u16_text);
-        if (line > 0) {
-          logical_line.start_char = countChars(logical_line.start_byte, byte_length);
-        } else {
-          logical_line.start_char = 0;
-        }
-        logical_line.is_dirty = false;
-      }
+      m_logical_lines_[i].is_char_dirty = true;
+      m_logical_lines_[i].height = -1;
     }
   }
 
@@ -473,11 +467,6 @@ namespace NS_SWEETEDITOR {
     } else {
       return m_logical_lines_[line + 1].start_byte - m_logical_lines_[line].start_byte;
     }
-  }
-
-  size_t Document::countChars(size_t start_byte, size_t byte_length) const {
-    U8String text = getU8Text(start_byte, byte_length);
-    return simdutf::count_utf8(text.data(), text.length());
   }
 
   inline const char* Document::getSegmentData(const BufferSegment& segment) const {

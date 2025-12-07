@@ -28,11 +28,28 @@ public class EditorCore {
     public static final int GESTURE_TYPE_FAST_SCROLL = 6;
     private long mNativeHandle;
 
-    public EditorCore(EditorConfig config) {
-        this.mNativeHandle = nativeMakeEditorCore(config.touchConfig.touchSlop, config.touchConfig.doubleTapTimeout);
+    public EditorCore(EditorConfig config, TextMeasurer measurer) {
+        this.mNativeHandle = nativeMakeEditorCore(config.touchConfig.touchSlop, config.touchConfig.doubleTapTimeout, measurer);
+    }
+
+    public void setViewport(int width, int height) {
+        if (mNativeHandle == 0) {
+            return;
+        }
+        nativeSetViewport(mNativeHandle, width, height);
+    }
+
+    public void loadDocument(Document document) {
+        if (mNativeHandle == 0) {
+            return;
+        }
+        nativeLoadDocument(mNativeHandle, document.mNativeHandle);
     }
 
     public GestureResult handleGestureEvent(MotionEvent event) {
+        if (mNativeHandle == 0) {
+            return new GestureResult();
+        }
         int eventType = getEventTypeInt(event);
         int pointerCount = event.getPointerCount();
         float[] points = new float[pointerCount * 2];
@@ -43,6 +60,26 @@ public class EditorCore {
         ByteBuffer data = nativeHandleGestureEvent(mNativeHandle, eventType, pointerCount, points);
         return readGestureResult(data);
     }
+
+    public void resetMeasurer() {
+        if (mNativeHandle == 0) {
+            return;
+        }
+        nativeResetMeasurer(mNativeHandle);
+    }
+
+    public void buildRenderModel() {
+        String json = nativeBuildRenderModel(mNativeHandle);
+        System.out.println(json);
+    }
+
+    public String getVisualRunText(long textId) {
+        if (mNativeHandle == 0) {
+            return "";
+        }
+        return nativeGetVisualRunText(mNativeHandle, textId);
+    }
+
 
     @Override
     protected void finalize() throws Throwable {
@@ -179,14 +216,29 @@ public class EditorCore {
         }
     }
 
-    @CriticalNative
-    private static native long nativeMakeEditorCore(float touchSlop, long doubleTapTimeout);
+    @FastNative
+    private static native long nativeMakeEditorCore(float touchSlop, long doubleTapTimeout, TextMeasurer measurer);
 
     @CriticalNative
     private static native void nativeFinalizeEditorCore(long handle);
 
+    @CriticalNative
+    private static native void nativeSetViewport(long handle, int width, int height);
+
+    @CriticalNative
+    private static native void nativeLoadDocument(long handle, long documentHandle);
+
     @FastNative
     private static native ByteBuffer nativeHandleGestureEvent(long handle, int type, int pointerCount, float[] points);
+
+    @CriticalNative
+    private static native void nativeResetMeasurer(long handle);
+
+    @FastNative
+    private static native String nativeBuildRenderModel(long handle);
+
+    @FastNative
+    private static native String nativeGetVisualRunText(long handle, long textId);
 
     static {
         System.loadLibrary("sweeteditor");

@@ -4,6 +4,22 @@
 #include <jni.h>
 #include <memory>
 
+class JObjectInvoker {
+public:
+  JObjectInvoker(JNIEnv* env, jobject java_obj): m_env_(env), m_java_obj_(env->NewGlobalRef(java_obj)) {
+  }
+
+  virtual ~JObjectInvoker() {
+    if (m_env_ != nullptr) {
+      m_env_->DeleteGlobalRef(m_java_obj_);
+    }
+  }
+
+protected:
+  JNIEnv* m_env_;
+  jobject m_java_obj_;
+};
+
 template<typename T>
 class JPtrHolder {
 public:

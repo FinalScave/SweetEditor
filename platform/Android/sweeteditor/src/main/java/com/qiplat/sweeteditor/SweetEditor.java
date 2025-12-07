@@ -12,6 +12,7 @@ import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 
+import com.qiplat.sweeteditor.core.Document;
 import com.qiplat.sweeteditor.core.EditorConfig;
 import com.qiplat.sweeteditor.core.EditorCore;
 import com.qiplat.sweeteditor.core.TextMeasurer;
@@ -42,6 +43,15 @@ public class SweetEditor extends View {
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        setMeasuredDimension(width, height);
+        mEditorCore.setViewport(width, height);
+        postInvalidate();
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         EditorCore.GestureResult result = mEditorCore.handleGestureEvent(event);
         Log.d(TAG, "result: " + result);
@@ -50,13 +60,16 @@ public class SweetEditor extends View {
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
-        Paint.FontMetrics fm = mTextPaint.getFontMetrics();
-        canvas.drawText("你好", 0, fm.descent - fm.ascent, mTextPaint);
-        canvas.drawText("你好", 100, fm.descent - fm.ascent, mTextPaint);
+        mEditorCore.buildRenderModel();
+    }
+
+    public void loadDocument(Document document) {
+        mEditorCore.loadDocument(document);
     }
 
     public void setTypeface(Typeface typeface) {
         mTextMeasurer.setTypeface(typeface);
+        mEditorCore.resetMeasurer();
     }
 
     public void setTextSize(float textSize) {
@@ -68,14 +81,17 @@ public class SweetEditor extends View {
     }
 
     private void initView(Context context) {
-        int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        TouchConfig touchConfig = new TouchConfig(scaledTouchSlop, 300);
-        EditorConfig editorConfig = new EditorConfig(touchConfig);
-        mEditorCore = new EditorCore(editorConfig);
         mBackgroundPaint = new Paint();
         mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mCursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTextMeasurer = new TextMeasurer(mTextPaint);
+
+        int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        TouchConfig touchConfig = new TouchConfig(scaledTouchSlop, 300);
+        EditorConfig editorConfig = new EditorConfig(touchConfig);
+        mEditorCore = new EditorCore(editorConfig, mTextMeasurer);
+
+        setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
     }
 }

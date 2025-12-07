@@ -8,19 +8,14 @@
 #include "logging.h"
 
 namespace NS_SWEETEDITOR {
-  float PointF::distance(const PointF& other) const {
-    return sqrtf(powf(other.x - x, 2) + powf(other.y - y, 2));
-  }
-
-#ifdef SWEETEDITOR_DEBUG
-  U8String PointF::dump() const {
-    return "PointF {x = " + std::to_string(x) + ", y = " + std::to_string(y) + "}";
-  }
 
   U8String TouchConfig::dump() const {
     return "TouchConfig {touch_slop = " + std::to_string(touch_slop) + ", double_tap_timeout = " + std::to_string(double_tap_timeout) + "}";
   }
-#endif
+
+  U8String GestureEvent::dump() const {
+    return "GestureEvent {type = " + std::to_string(type) + ", point size = " + std::to_string(points.size()) + "}";
+  }
 
   GestureEvent GestureEvent::create(const EventType type, const uint8_t pointer_count, const float* points) {
     GestureEvent event;
@@ -38,13 +33,19 @@ namespace NS_SWEETEDITOR {
     if (event.points.empty()) {
       return {};
     }
+    //LOGD("GestureHandler::handleGestureEvent, event: %s", event.dump().c_str());
     switch (event.type) {
     case EventType::TOUCH_DOWN:
       m_down_points_ = event.points;
+      m_down_time_ = TimeUtil::milliTime();
+      m_last_move_point_ = m_down_points_[0];
       m_is_tap_ = true;
       break;
     case EventType::TOUCH_POINTER_DOWN:
       m_down_points_ = event.points;
+      if (m_down_points_.size() > 1) {
+        m_last_distance_ = m_down_points_[0].distance(m_down_points_[1]);
+      }
       m_is_tap_ = false;
       break;
     case EventType::TOUCH_POINTER_UP:
@@ -53,14 +54,14 @@ namespace NS_SWEETEDITOR {
       break;
     case EventType::TOUCH_MOVE:
       if (m_down_points_.size() == 1) {
-        const PointF& down_point = m_down_points_[0];
         const PointF& curr_point = event.points[0];
         // 单点触摸情况下，移动距离小于阈值判定为单击，大于阈值才判定为移动
-        if (curr_point.distance(down_point) > m_config_.touch_slop) {
+        if (curr_point.distance(m_last_move_point_) > m_config_.touch_slop) {
           m_is_tap_ = false;
-          float scroll_x = curr_point.x - down_point.x;
-          float scroll_y = curr_point.y - down_point.y;
-          return {GestureType::SCROLL, {}, {}, scroll_x, scroll_y};
+          float scroll_x = curr_point.x - m_last_move_point_.x;
+          float scroll_y = curr_point.y - m_last_move_point_.y;
+          m_last_move_point_ = curr_point;
+          return {GestureType::SCROLL, {}, {}, -scroll_x, -scroll_y};
         }
       } else {
         m_is_tap_ = false;
@@ -80,14 +81,15 @@ namespace NS_SWEETEDITOR {
           float max_delta_x = std::max(delta_x0, delta_x1);
           float max_delta_y = std::max(delta_y0, delta_y1);
           if (max_delta_x > max_delta_y) {
-            return {GestureType::FAST_SCROLL, {}, {}, max_delta_x};
+            return {GestureType::FAST_SCROLL, {}, {}, -max_delta_x};
           } else {
-            return {GestureType::FAST_SCROLL, {}, {}, {}, max_delta_y};
+            return {GestureType::FAST_SCROLL, {}, {}, {}, -max_delta_y};
           }
         } else {
-          float down_distance = down_point0.distance(down_point1);
           float curr_distance = curr_point0.distance(curr_point1);
-          return {GestureType::SCALE, {}, curr_distance / down_distance};
+          float scale = curr_distance / m_last_distance_;
+          m_last_distance_ = curr_distance;
+          return {GestureType::SCALE, {}, scale};
         }
       }
       break;
@@ -99,11 +101,16 @@ namespace NS_SWEETEDITOR {
           m_last_tap_time_ = 0;
           return {GestureType::DOUBLE_TAP, m_down_points_[0]};
         } else {
-          m_last_tap_time_ = TimeUtil::milliTime();
-          m_last_tap_point_ = m_down_points_[0];
-          return {GestureType::TAP, m_last_tap_point_};
+          if (TimeUtil::milliTime() - m_down_time_ > m_config_.long_press_ms) {
+            return {GestureType::LONG_PRESS, m_down_points_[0]};
+          } else {
+            m_last_tap_time_ = TimeUtil::milliTime();
+            m_last_tap_point_ = m_down_points_[0];
+            return {GestureType::TAP, m_last_tap_point_};
+          }
         }
       }
+      m_down_time_ = std::numeric_limits<int64_t>::max();
       break;
     default:
       break;

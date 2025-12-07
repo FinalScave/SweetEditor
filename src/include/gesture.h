@@ -6,7 +6,8 @@
 #define SWEETEDITOR_GESTURE_H
 
 #include <cstdint>
-#include "macro.h"
+#include <limits>
+#include "foundation.h"
 
 namespace NS_SWEETEDITOR {
   /// 手势处理初始化的一些配置
@@ -15,21 +16,10 @@ namespace NS_SWEETEDITOR {
     float touch_slop {10};
     /// 双击的时间阈值
     int64_t double_tap_timeout {300};
-#ifdef SWEETEDITOR_DEBUG
+    /// 长按的时间阈值
+    int64_t long_press_ms {500};
+
     U8String dump() const;
-#endif
-  };
-
-  /// 横纵坐标数据包装
-  struct PointF {
-    float x {0};
-    float y {0};
-
-    float distance(const PointF& other) const;
-
-#ifdef SWEETEDITOR_DEBUG
-    U8String dump() const;
-#endif
   };
 
   /// 手势操作类型定义
@@ -58,6 +48,7 @@ namespace NS_SWEETEDITOR {
     Vector<PointF> points;
 
     static GestureEvent create(const EventType type, const uint8_t pointer_count, const float* points);
+    U8String dump() const;
   };
 
   /// 手势处理的结果类型
@@ -98,6 +89,9 @@ namespace NS_SWEETEDITOR {
   private:
     TouchConfig m_config_;
     Vector<PointF> m_down_points_;
+    int64_t m_down_time_ {std::numeric_limits<int64_t>::max()};
+    PointF m_last_move_point_;
+    float m_last_distance_ {0};
     bool m_is_tap_ {false};
     PointF m_last_tap_point_;
     int64_t m_last_tap_time_ {0};

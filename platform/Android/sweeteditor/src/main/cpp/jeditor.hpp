@@ -75,8 +75,8 @@ public:
   constexpr static const char *kJClassName = "com/qiplat/sweeteditor/core/Document";
   constexpr static const JNINativeMethod kJMethods[] = {
       {"nativeMakeStringDocument", "(Ljava/lang/String;)J", (void*) makeStringDocument},
-      {"nativeMakeFileDocument", "(Ljava/lang/String;)J", (void*) makeStringDocument},
-      {"nativeFinalizeDocument", "(J)V", (void*) makeStringDocument},
+      {"nativeMakeFileDocument", "(Ljava/lang/String;)J", (void*) makeFileDocument},
+      {"nativeFinalizeDocument", "(J)V", (void*) finalizeDocument},
       {"nativeGetText", "(J)Ljava/lang/String;", (void*) getText},
       {"nativeGetLineCount", "(J)I", (void*) getLineCount},
       {"nativeGetLineText", "(JI)Ljava/lang/String;", (void*) getLineText},
@@ -91,17 +91,73 @@ public:
   }
 };
 
+// ====================================== AndroidTextMeasurer ===========================================
+class AndroidTextMeasurer : public TextMeasurer, public JObjectInvoker {
+public:
+  AndroidTextMeasurer(JNIEnv* env, jobject measurer): JObjectInvoker(env, measurer) {
+    if (m_jclass_TextMeasurer_ == nullptr) {
+      m_jclass_TextMeasurer_ = (jclass)env->NewGlobalRef(env->FindClass("com/qiplat/sweeteditor/core/TextMeasurer"));
+    }
+    if (m_jmethod_measureWidth_ == nullptr) {
+      m_jmethod_measureWidth_ = env->GetMethodID(m_jclass_TextMeasurer_,
+                                                "measureWidth","(Ljava/lang/String;Z)F");
+    }
+    if (m_jmethod_getFontHeight_ == nullptr) {
+      m_jmethod_getFontHeight_ = env->GetMethodID(m_jclass_TextMeasurer_,
+                                                 "getFontHeight", "()F");
+    }
+  }
+
+  float measureWidth(const U8String &text, bool is_bold) override {
+    jstring java_text = m_env_->NewStringUTF(text.c_str());
+    return m_env_->CallNonvirtualFloatMethod(m_java_obj_,m_jclass_TextMeasurer_,
+                                             m_jmethod_measureWidth_, java_text, is_bold);
+  }
+
+  float getFontHeight() override {
+    return m_env_->CallNonvirtualFloatMethod(m_java_obj_,m_jclass_TextMeasurer_,m_jmethod_getFontHeight_);
+  }
+private:
+  static jclass m_jclass_TextMeasurer_;
+  static jmethodID m_jmethod_measureWidth_;
+  static jmethodID m_jmethod_getFontHeight_;
+};
+jclass AndroidTextMeasurer::m_jclass_TextMeasurer_ = nullptr;
+jmethodID AndroidTextMeasurer::m_jmethod_measureWidth_ = nullptr;
+jmethodID AndroidTextMeasurer::m_jmethod_getFontHeight_ = nullptr;
+
 // ====================================== EditorCoreJni ===========================================
 class EditorCoreJni {
 public:
-  static jlong makeEditorCore(jfloat touch_slop, jlong double_tap_timeout) {
+  static jlong makeEditorCore(JNIEnv* env, jclass clazz, jfloat touch_slop, jlong double_tap_timeout, jobject measurer) {
     TouchConfig touch_config = {touch_slop, double_tap_timeout};
     EditorConfig editor_config = {touch_config};
-    return makePtrHolderToJavaHandle<EditorCore>(editor_config);
+    Ptr<TextMeasurer> native_measurer = makePtr<AndroidTextMeasurer>(env, measurer);
+    return makePtrHolderToJavaHandle<EditorCore>(editor_config, native_measurer);
   }
 
   static void finalizeEditorCore(jlong handle) {
     deleteNativePtrHolder<EditorCore>(handle);
+  }
+
+  static void setViewport(jlong handle, jint width, jint height) {
+    Ptr<EditorCore> editor_core = getNativePtrHolderValue<EditorCore>(handle);
+    if (editor_core == nullptr) {
+      return;
+    }
+    editor_core->setViewport({(float)width, (float)height});
+  }
+
+  static void loadDocument(jlong handle, jlong doc_handle) {
+    Ptr<EditorCore> editor_core = getNativePtrHolderValue<EditorCore>(handle);
+    if (editor_core == nullptr) {
+      return;
+    }
+    Ptr<Document> document = getNativePtrHolderValue<Document>(doc_handle);
+    if (document == nullptr) {
+      return;
+    }
+    editor_core->loadDocument(document);
   }
 
   static jobject handleGestureEvent(JNIEnv* env, jclass clazz, jlong handle, jint type, jint pointer_count, jfloatArray points) {
@@ -168,11 +224,44 @@ public:
     }
   }
 
+  static void resetMeasurer(jlong handle) {
+    Ptr<EditorCore> editor_core = getNativePtrHolderValue<EditorCore>(handle);
+    if (editor_core == nullptr) {
+      return;
+    }
+    editor_core->resetMeasurer();
+  }
+
+  static jobject buildRenderModel(JNIEnv* env, jclass clazz, jlong handle) {
+    Ptr<EditorCore> editor_core = getNativePtrHolderValue<EditorCore>(handle);
+    if (editor_core == nullptr) {
+      return NULL;
+    }
+    EditorRenderModel model;
+    editor_core->buildRenderModel(model);
+    nlohmann::json json = model;
+    return env->NewStringUTF(json.dump(2).c_str());
+  }
+
+  static jstring getVisualRunText(JNIEnv* env, jclass clazz, jlong handle, jlong text_id) {
+    Ptr<EditorCore> editor_core = getNativePtrHolderValue<EditorCore>(handle);
+    if (editor_core == nullptr) {
+      return env->NewStringUTF("");
+    }
+    const U8String& text = editor_core->getVisualRunText(text_id);
+    return env->NewStringUTF(text.c_str());
+  }
+
   constexpr static const char *kJClassName = "com/qiplat/sweeteditor/core/EditorCore";
   constexpr static const JNINativeMethod kJMethods[] = {
-      {"nativeMakeEditorCore", "(FJ)J", (void*) makeEditorCore},
+      {"nativeMakeEditorCore", "(FJLcom/qiplat/sweeteditor/core/TextMeasurer;)J", (void*) makeEditorCore},
       {"nativeFinalizeEditorCore", "(J)V", (void*) finalizeEditorCore},
+      {"nativeSetViewport", "(JII)V", (void*) setViewport},
+      {"nativeLoadDocument", "(JJ)V", (void*) loadDocument},
       {"nativeHandleGestureEvent", "(JII[F)Ljava/nio/ByteBuffer;", (void*) handleGestureEvent},
+      {"nativeResetMeasurer", "(J)V", (void*) resetMeasurer},
+      {"nativeBuildRenderModel", "(J)Ljava/lang/String;", (void*) buildRenderModel},
+      {"nativeGetVisualRunText", "(JJ)Ljava/lang/String;", (void*) getVisualRunText},
   };
 
   static void RegisterMethods(JNIEnv *env) {
