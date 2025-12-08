@@ -9,6 +9,8 @@
 /cmake-build-*
 /build
 /out
+bin
+obj
 /docs/doxygen
 tests/output
 tests/build

@@ -5,6 +5,10 @@
 #ifndef SWEETEDITOR_LOGGING_H
 #define SWEETEDITOR_LOGGING_H
 
+#ifdef _MSC_VER
+#define __FILE_NAME__ (strrchr("\\" __FILE__, '\\') + 1)
+#endif
+
 #ifdef ENABLE_LOG
   #define LOG_TAG "SWEETEDITOR"
   #if defined(ANDROID)

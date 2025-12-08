@@ -44,6 +44,7 @@ namespace NS_SWEETEDITOR {
     if (!m_viewport_.valid()) {
       return {};
     }
+    LOGD("composeVisibleVisualLines start");
     // 清空状态
     m_text_mapping_.clear();
     m_text_id_counter_ = 0;
@@ -52,6 +53,7 @@ namespace NS_SWEETEDITOR {
     if (logical_lines.empty()) {
       return {};
     }
+    LOGD("composeVisibleVisualLines find visible line");
     size_t first_line = 0;
     size_t last_line = logical_lines.size() - 1;
     float first_y = 0;
@@ -80,6 +82,7 @@ namespace NS_SWEETEDITOR {
       }
       current_y += logical_line.height;
     }
+    LOGD("composeVisibleVisualLines build visual");
     // 构建视觉行（仅扫描可见列）
     current_y = first_y;
     Vector<VisualLine> visual_lines;
@@ -144,7 +147,11 @@ namespace NS_SWEETEDITOR {
 #else
     static const U16String test_chars = u"iIl1!.,;:W0@";
 #endif
+#ifdef _MSC_VER
+    static const size_t test_chars_len = 12;
+#else
     static const size_t test_chars_len = test_chars.size();
+#endif
     float widths[test_chars_len];
     float sum = 0;
     // 测量每个字符的宽度

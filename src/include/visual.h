@@ -97,7 +97,7 @@ namespace NS_SWEETEDITOR {
   U8String dumpEnum(GuideLineDirection direction);
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PointF, x, y)
-  NLOHMANN_JSON_SERIALIZE_ENUM( VisualRunType, {
+  NLOHMANN_JSON_SERIALIZE_ENUM(VisualRunType, {
     {VisualRunType::TEXT, "TEXT"},
     {VisualRunType::WHITESPACE, "WHITESPACE"},
     {VisualRunType::NEWLINE, "NEWLINE"},
@@ -107,7 +107,7 @@ namespace NS_SWEETEDITOR {
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VisualRun, type, x, y, text_id, style_id)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VisualLine, logical_line, runs)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Cursor, position, show_dragger)
-  NLOHMANN_JSON_SERIALIZE_ENUM( GuideLineDirection, {
+  NLOHMANN_JSON_SERIALIZE_ENUM(GuideLineDirection, {
     {GuideLineDirection::VERTICAL, "VERTICAL"},
     {GuideLineDirection::HORIZONTAL, "HORIZONTAL"},
   })

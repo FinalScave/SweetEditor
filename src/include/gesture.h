@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <nlohmann/json.hpp>
 #include "foundation.h"
 
 namespace NS_SWEETEDITOR {
@@ -96,6 +97,26 @@ namespace NS_SWEETEDITOR {
     PointF m_last_tap_point_;
     int64_t m_last_tap_time_ {0};
   };
+
+  NLOHMANN_JSON_SERIALIZE_ENUM(EventType, {
+    {EventType::UNDEFINED, "UNDEFINED"},
+    {EventType::TOUCH_DOWN, "TOUCH_DOWN"},
+    {EventType::TOUCH_POINTER_DOWN, "TOUCH_POINTER_DOWN"},
+    {EventType::TOUCH_MOVE, "TOUCH_MOVE"},
+    {EventType::TOUCH_POINTER_UP, "TOUCH_POINTER_UP"},
+    {EventType::TOUCH_UP, "TOUCH_UP"},
+    {EventType::TOUCH_CANCEL, "TOUCH_CANCEL"},
+  })
+  NLOHMANN_JSON_SERIALIZE_ENUM(GestureType, {
+    {GestureType::UNDEFINED, "UNDEFINED"},
+    {GestureType::TAP, "TAP"},
+    {GestureType::DOUBLE_TAP, "DOUBLE_TAP"},
+    {GestureType::LONG_PRESS, "LONG_PRESS"},
+    {GestureType::SCALE, "SCALE"},
+    {GestureType::SCROLL, "SCROLL"},
+    {GestureType::FAST_SCROLL, "FAST_SCROLL"},
+  })
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GestureResult, type, tap_point, scale, scroll_x, scroll_y)
 }
 
 #endif //SWEETEDITOR_GESTURE_H
