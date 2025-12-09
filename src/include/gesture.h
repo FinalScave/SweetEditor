@@ -39,6 +39,8 @@ namespace NS_SWEETEDITOR {
     TOUCH_UP = 5,
     /// 取消事件
     TOUCH_CANCEL = 6,
+    /// 鼠标按下
+    MOUSE_DOWN = 7,
   };
 
   /// 平台层发送过来的手势操作数据封装

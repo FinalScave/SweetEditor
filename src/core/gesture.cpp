@@ -31,13 +31,29 @@ namespace NS_SWEETEDITOR {
 
   GestureResult GestureHandler::handleGestureEvent(const GestureEvent& event) {
     if (event.points.empty()) {
+      LOGD("GestureHandler::handleGestureEvent, points empty");
       return {};
     }
     //LOGD("GestureHandler::handleGestureEvent, event: %s", event.dump().c_str());
+    int64_t current_time = TimeUtil::milliTime();
     switch (event.type) {
+    case EventType::MOUSE_DOWN:
+      m_down_points_ = event.points;
+      if (current_time - m_last_tap_time_ <= m_config_.double_tap_timeout
+        && m_down_points_[0].distance(m_last_tap_point_) < m_config_.touch_slop) {
+        m_is_tap_ = false;
+        m_last_tap_time_ = 0;
+        return {GestureType::DOUBLE_TAP, m_down_points_[0]};
+      } else {
+        m_last_tap_time_ = current_time;
+        m_last_tap_point_ = m_down_points_[0];
+        m_is_tap_ = true;
+        return {GestureType::TAP, m_down_points_[0]};
+      }
+      break;
     case EventType::TOUCH_DOWN:
       m_down_points_ = event.points;
-      m_down_time_ = TimeUtil::milliTime();
+      m_down_time_ = current_time;
       m_last_move_point_ = m_down_points_[0];
       m_is_tap_ = true;
       break;
@@ -95,16 +111,16 @@ namespace NS_SWEETEDITOR {
       break;
     case EventType::TOUCH_UP:
       if (m_is_tap_) {
-        if (TimeUtil::milliTime() - m_last_tap_time_ <= m_config_.double_tap_timeout
+        if (current_time - m_last_tap_time_ <= m_config_.double_tap_timeout
             && m_down_points_[0].distance(m_last_tap_point_) < m_config_.touch_slop) {
           m_is_tap_ = false;
           m_last_tap_time_ = 0;
           return {GestureType::DOUBLE_TAP, m_down_points_[0]};
         } else {
-          if (TimeUtil::milliTime() - m_down_time_ > m_config_.long_press_ms) {
+          if (current_time - m_down_time_ > m_config_.long_press_ms) {
             return {GestureType::LONG_PRESS, m_down_points_[0]};
           } else {
-            m_last_tap_time_ = TimeUtil::milliTime();
+            m_last_tap_time_ = current_time;
             m_last_tap_point_ = m_down_points_[0];
             return {GestureType::TAP, m_last_tap_point_};
           }

@@ -49,7 +49,7 @@ namespace NS_SWEETEDITOR {
   }
 
   void EditorCore::resetMeasurer() {
-    m_text_layout_->testMonospace();
+    m_text_layout_->resetMeasurer();
   }
 
   void EditorCore::buildRenderModel(EditorRenderModel& model) {

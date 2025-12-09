@@ -31,6 +31,11 @@ namespace NS_SWEETEDITOR {
     size_t end_line {0};
   };
 
+  struct FontMetrics {
+    float ascent;
+    float descent;
+  };
+
   /// 文本宽度测量接口，由各平台实现
   class TextMeasurer {
   public:
@@ -38,13 +43,13 @@ namespace NS_SWEETEDITOR {
 
     /// 测量指定文本内容的宽度
     /// @param text 文本内容
-    /// @param is_bold 是否为加粗字体
+    /// @param style_id 文本样式
     /// @return 测量后的宽度
-    virtual float measureWidth(const U8String& text, bool is_bold) = 0;
+    virtual float measureWidth(const U8String& text, uint32_t style_id) = 0;
 
-    /// 获取字体高度
-    /// @return 字体高度
-    virtual float getFontHeight() = 0;
+    /// 获取字体度量信息
+    /// @return 字体度量信息
+    virtual FontMetrics getFontMetrics() = 0;
   };
 
   /// 文本布局引擎
@@ -66,7 +71,7 @@ namespace NS_SWEETEDITOR {
 
     const U8String& getTextById(int64_t text_id);
 
-    void testMonospace();
+    void resetMeasurer();
   private:
     Ptr<TextMeasurer> m_measurer_;
     Ptr<Document> m_document_;

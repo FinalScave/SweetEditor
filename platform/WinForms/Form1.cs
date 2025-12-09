@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SweetEditor
@@ -7,17 +8,12 @@ namespace SweetEditor
         public Form1()
         {
             InitializeComponent();
-            EditorControl editorControl = new EditorControl();
-			components.Add(editorControl);
 
 			Document document = new Document("AAAAA\nBBB");
-            Console.WriteLine("new Document");
+            Debug.WriteLine("new Document");
 
-            editorControl.LoadDocument(document);
-			Console.WriteLine("LoadDocument");
-
-			string json = editorControl.BuildRenderModel();
-			Console.WriteLine(json);
+            editorControl1.LoadDocument(document);
+			Debug.WriteLine("LoadDocument");
 		}
     }
 }

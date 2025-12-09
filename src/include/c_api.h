@@ -18,8 +18,8 @@
 
 extern "C" {
 
-typedef float (__stdcall* MeasureTextWidth)(const char* text, bool is_bold);
-typedef float* (__stdcall* GetFontMetrics)();
+typedef float (__stdcall* MeasureTextWidth)(const char* text, uint32_t style_id);
+typedef float (__stdcall* GetFontMetrics)(float* arr, size_t length);
 
 /// 创建Document类并返回其句柄
 /// @param text UTF8文本内容
@@ -54,9 +54,10 @@ EDITOR_API const char* get_document_line_text(intptr_t document_handle, size_t l
 /// 创建EditorCore类并返回其句柄
 /// @param touch_slop 单击移动的阈值
 /// @param double_tap_timeout 手势判定双击点击的时间差
-/// @param text_measurer 文本宽度测量函数
+/// @param measurer_func 文本宽度测量函数
+/// @param metrics_func 文本度量信息函数
 /// @return EditorCore句柄
-EDITOR_API intptr_t create_editor(float touch_slop, int64_t double_tap_timeout, MeasureTextWidth text_measurer);
+EDITOR_API intptr_t create_editor(float touch_slop, int64_t double_tap_timeout, MeasureTextWidth measurer_func, GetFontMetrics metrics_func);
 
 /// 释放EditorCore
 /// @param editor_handle EditorCore句柄

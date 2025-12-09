@@ -10,7 +10,7 @@
 namespace NS_SWEETEDITOR {
   TextLayout::TextLayout(const Ptr<TextMeasurer>& measurer): m_measurer_(measurer) {
     m_decoration_manager_ = makePtr<DecorationManager>();
-    m_line_height_ = m_measurer_->getFontHeight();
+    resetMeasurer();
   }
 
   void TextLayout::loadDocument(const Ptr<Document>& document) {
@@ -49,6 +49,9 @@ namespace NS_SWEETEDITOR {
     m_text_mapping_.clear();
     m_text_id_counter_ = 0;
     // 找第一行和最后一行可见的
+    if (m_document_ == nullptr) {
+      return {};
+    }
     Vector<LogicalLine>& logical_lines = m_document_->getLogicalLines();
     if (logical_lines.empty()) {
       return {};
@@ -141,7 +144,9 @@ namespace NS_SWEETEDITOR {
     return m_text_mapping_[text_id];
   }
 
-  void TextLayout::testMonospace() {
+  void TextLayout::resetMeasurer() {
+    FontMetrics metrics = m_measurer_->getFontMetrics();
+    m_line_height_ = metrics.descent - metrics.ascent;
 #ifdef _WIN32
     static const U16String test_chars = L"iIl1!.,;:W0@";
 #else

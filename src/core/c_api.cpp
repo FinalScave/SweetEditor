@@ -80,21 +80,27 @@ using namespace NS_SWEETEDITOR;
 
 class CTextMeasurer : public TextMeasurer {
 public:
-  explicit CTextMeasurer(MeasureTextWidth func): m_func_(func) {
+  explicit CTextMeasurer(MeasureTextWidth measure_func, GetFontMetrics metrics_func): m_measurer_func_(measure_func), m_metrics_func_(metrics_func) {
   }
 
-  float measureWidth(const U8String& text, bool is_bold) override {
-    if (m_func_ == nullptr) {
+  float measureWidth(const U8String& text, uint32_t style_id) override {
+    if (m_measurer_func_ == nullptr) {
       return 0;
     }
-    return m_func_(text.c_str(), is_bold);
+    return m_measurer_func_(text.c_str(), style_id);
   }
 
-  float getFontHeight() override {
-    return 20;
+  FontMetrics getFontMetrics() override {
+    if (m_measurer_func_ == nullptr) {
+      return {0, 0};
+    }
+    float arr[2];
+    m_metrics_func_(arr, 2);
+    return {arr[0], arr[1]};
   }
 private:
-  MeasureTextWidth m_func_;
+  MeasureTextWidth m_measurer_func_;
+  GetFontMetrics m_metrics_func_;
 };
 
 extern "C" {
@@ -143,8 +149,8 @@ const char* get_document_line_text(intptr_t document_handle, size_t line) {
   return result;
 }
 
-intptr_t create_editor(float touch_slop, int64_t double_tap_timeout, MeasureTextWidth text_measurer) {
-  Ptr<CTextMeasurer> c_measurer = makePtr<CTextMeasurer>(text_measurer);
+intptr_t create_editor(float touch_slop, int64_t double_tap_timeout, MeasureTextWidth measurer_func, GetFontMetrics metrics_func) {
+  Ptr<CTextMeasurer> c_measurer = makePtr<CTextMeasurer>(measurer_func, metrics_func);
   TouchConfig touch_config = {touch_slop, double_tap_timeout};
   EditorConfig config;
   config.touch_config = touch_config;

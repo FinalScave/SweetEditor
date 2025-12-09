@@ -16,7 +16,7 @@ namespace SweetEditor
 
 		private static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
 			if (libraryName == "sweeteditor.dll") {
-				string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\..\\..\\cmake-build-debug-visual-studio\\bin", libraryName);
+				string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\..\\..\\cmake-build-debug-visual-studio\\x64-Debug\\bin", libraryName);
 				if (File.Exists(path)) {
 					return NativeLibrary.Load(path);
 				}
