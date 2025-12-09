@@ -100,6 +100,11 @@ EDITOR_API const char* get_editor_visual_run_text(intptr_t editor_handle, int64_
 /// @param string_ptr 字符串指针
 EDITOR_API void free_c_string(intptr_t string_ptr);
 
+#ifdef _WIN32
+/// 设置Dll调用时的Crash日志输出，仅Windows可用
+EDITOR_API void init_unhandled_exception_handler();
+#endif
+
 }
 
 #endif //SWEETEDITOR_C_API_H

@@ -254,17 +254,8 @@ LONG WINAPI MyUnhandledExceptionFilter(PEXCEPTION_POINTERS pExceptionInfo) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
-  switch (ul_reason_for_call) {
-  case DLL_PROCESS_ATTACH:
-    SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
-    break;
-  case DLL_THREAD_ATTACH:
-  case DLL_THREAD_DETACH:
-  case DLL_PROCESS_DETACH:
-    break;
-  }
-  return TRUE;
+void init_unhandled_exception_handler() {
+  SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
 }
 #endif
 
