@@ -7,6 +7,7 @@
 #pragma comment(lib, "DbgHelp.lib")
 #endif
 
+#include "utility.h"
 #include "c_api.h"
 #include "editor_core.h"
 
@@ -83,7 +84,7 @@ public:
   explicit CTextMeasurer(MeasureTextWidth measure_func, GetFontMetrics metrics_func): m_measurer_func_(measure_func), m_metrics_func_(metrics_func) {
   }
 
-  float measureWidth(const U8String& text, uint32_t style_id) override {
+  float measureWidth(const U16String& text, uint32_t style_id) override {
     if (m_measurer_func_ == nullptr) {
       return 0;
     }
@@ -138,15 +139,15 @@ size_t get_document_line_count(intptr_t document_handle) {
   return document->getLineCount();
 }
 
-const char* get_document_line_text(intptr_t document_handle, size_t line) {
+const U16Char* get_document_line_text(intptr_t document_handle, size_t line) {
   Ptr<Document> document = getCPtrHolderValue<Document>(document_handle);
   if (document == nullptr) {
-    return "";
+    return U16_NONE;
   }
-  U8String u8_text = document->getLineU8Text(line);
-  char* result = new char[u8_text.size() + 1];
-  std::strcpy(result, u8_text.c_str());
-  return result;
+  U16String u16_text = document->getLineU16Text(line);
+  static U16String result_u16;
+  result_u16 = u16_text;
+  return result_u16.c_str();
 }
 
 intptr_t create_editor(float touch_slop, int64_t double_tap_timeout, MeasureTextWidth measurer_func, GetFontMetrics metrics_func) {
@@ -182,11 +183,11 @@ void set_editor_document(intptr_t editor_handle, intptr_t document_handle) {
   editor_core->loadDocument(document);
 }
 
-const char* handle_editor_gesture_event(intptr_t editor_handle, uint8_t type, uint8_t pointer_count,
+const U16Char* handle_editor_gesture_event(intptr_t editor_handle, uint8_t type, uint8_t pointer_count,
     float* points) {
   Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
   if (editor_core == nullptr) {
-    return "";
+    return U16_NONE;
   }
   GestureEvent event;
   event.type = static_cast<EventType>(type);
@@ -196,9 +197,9 @@ const char* handle_editor_gesture_event(intptr_t editor_handle, uint8_t type, ui
   GestureResult result = editor_core->handleGestureEvent(event);
   nlohmann::json json = result;
   U8String u8_text = json.dump(2);
-  char* json_str = new char[u8_text.size() + 1];
-  std::strcpy(json_str, u8_text.c_str());
-  return json_str;
+  U16Char* u16_json;
+  StrUtil::convertUTF8ToUTF16(u8_text, &u16_json);
+  return u16_json;
 }
 
 void reset_editor_text_measurer(intptr_t editor_handle) {
@@ -209,32 +210,32 @@ void reset_editor_text_measurer(intptr_t editor_handle) {
   editor_core->resetMeasurer();
 }
 
-const char* build_editor_render_model(intptr_t editor_handle) {
+const U16Char* build_editor_render_model(intptr_t editor_handle) {
   Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
   if (editor_core == nullptr) {
-    return "";
+    return U16_NONE;
   }
   EditorRenderModel model;
   editor_core->buildRenderModel(model);
   U8String u8_text = model.toJson();
-  char* json_str = new char[u8_text.size() + 1];
-  std::strcpy(json_str, u8_text.c_str());
-  return json_str;
-}
-
-const char* get_editor_visual_run_text(intptr_t editor_handle, int64_t run_text_id) {
-  Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
-  if (editor_core == nullptr) {
-    return "";
-  }
-  U8String u8_text = editor_core->getVisualRunText(run_text_id);
-  char* result = new char[u8_text.size() + 1];
-  std::strcpy(result, u8_text.c_str());
+  U16Char* result;
+  StrUtil::convertUTF8ToUTF16(u8_text, &result);
   return result;
 }
 
-void free_c_string(intptr_t string_ptr) {
-  const char* ptr = reinterpret_cast<const char*>(string_ptr);
+const U16Char* get_editor_visual_run_text(intptr_t editor_handle, int64_t run_text_id) {
+  Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
+  if (editor_core == nullptr) {
+    return U16_NONE;
+  }
+  U16String u16_text = editor_core->getVisualRunText(run_text_id);
+  static U16String result_u16;
+  result_u16 = u16_text;
+  return result_u16.c_str();
+}
+
+void free_u16_string(intptr_t string_ptr) {
+  const U16Char* ptr = reinterpret_cast<const U16Char*>(string_ptr);
   delete[] ptr;
 }
 

@@ -40,6 +40,16 @@ namespace NS_SWEETEDITOR {
     /// @param args 参数
     /// @return 格式化之后的文本
     static U8String vFormatString(const char* format, va_list args);
+
+    /// 将UTF8文本转换为UTF16
+    /// @param utf8_str UTF8文本
+    /// @param result 结果UTF16
+    static void convertUTF8ToUTF16(const U8String& utf8_str, U16String& result);
+
+    /// 将UTF8文本转换为UTF16字符串
+    /// @param utf8_str UTF8文本
+    /// @param result 结果UTF16
+    static void convertUTF8ToUTF16(const U8String& utf8_str, U16Char** result);
   };
 }
 

@@ -51,7 +51,7 @@ namespace NS_SWEETEDITOR {
     /// 获取视觉文本片段id对应的文本
     /// @param run_text_id 片段id
     /// @return UTF8文本
-    const U8String& getVisualRunText(int64_t run_text_id) const;
+    const U16String& getVisualRunText(int64_t run_text_id) const;
 
     /// 设置编辑器视口大小
     /// @param viewport 视口区域

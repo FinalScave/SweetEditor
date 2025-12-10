@@ -30,7 +30,7 @@ namespace NS_SWEETEDITOR {
   }
 
   Vector<TextLine> TextLayout::layoutLine(size_t line) {
-    U8String line_text = m_document_->getLineU8Text(line);
+    U16String line_text = m_document_->getLineU16Text(line);
     if (m_wrap_mode_ == WrapMode::NONE) {
       return {{line_text}};
     } else if (m_wrap_mode_ == WrapMode::CHAR_BREAK) {
@@ -95,43 +95,43 @@ namespace NS_SWEETEDITOR {
       auto text_begin = logical_line.cached_text.begin();
       auto text_end = logical_line.cached_text.end();
       float current_x = 0;
-      size_t start_byte = 0;
-      size_t end_byte = logical_line.cached_text.length();
+      size_t start_u16_index = 0;
+      size_t end_u16_index = logical_line.cached_text.length();
       float first_x = 0;
-      size_t current_byte = 0;
+      size_t current_u16_index = 0;
       while (text_begin != text_end) {
         auto char_start = text_begin;
-        utf8::next(text_begin, text_end);
-        U8String char_text(char_start, text_begin);
-        float char_width = measureWidth(char_text, false);
+        utf8::next16(text_begin, text_end);
+        U16String u16_char_text(char_start, text_begin);
+        float char_width = measureWidth(u16_char_text, false);
         if (current_x + char_width > m_view_state_.scroll_x) {
-          start_byte = current_byte;
+          start_u16_index = current_u16_index;
           first_x = current_x - m_view_state_.scroll_x;
           current_x += char_width;
-          current_byte += char_text.length();
+          current_u16_index += u16_char_text.length();
           break;
         }
         current_x += char_width;
-        current_byte += char_text.length();
+        current_u16_index += u16_char_text.length();
       }
       while (text_begin != text_end) {
         auto char_start = text_begin;
-        utf8::next(text_begin, text_end);
-        U8String char_text(char_start, text_begin);
-        float char_width = measureWidth(char_text, false);
+        utf8::next16(text_begin, text_end);
+        U16String u16_char_text(char_start, text_begin);
+        float char_width = measureWidth(u16_char_text, false);
         if (current_x + char_width > m_view_state_.scroll_x + m_viewport_.width) {
-          end_byte = current_byte;
+          end_u16_index = current_u16_index;
           current_x += char_width;
-          current_byte += char_text.length();
+          current_u16_index += u16_char_text.length();
           break;
         }
         current_x += char_width;
-        current_byte += char_text.length();
+        current_u16_index += u16_char_text.length();
       }
       // 截取可见区域作为视觉行
       VisualLine visual_line;
       visual_line.logical_line = i;
-      U8String visible_text = logical_line.cached_text.substr(start_byte, end_byte - start_byte);
+      U16String visible_text = logical_line.cached_text.substr(start_u16_index, end_u16_index - start_u16_index);
       VisualRun run = {VisualRunType::TEXT, first_x, current_y, createTextId(visible_text), 0};
       visual_line.runs.push_back(run);
       visual_lines.push_back(visual_line);
@@ -140,7 +140,7 @@ namespace NS_SWEETEDITOR {
     return visual_lines;
   }
 
-  const U8String& TextLayout::getTextById(int64_t text_id) {
+  const U16String& TextLayout::getTextById(int64_t text_id) {
     return m_text_mapping_[text_id];
   }
 
@@ -161,16 +161,7 @@ namespace NS_SWEETEDITOR {
     float sum = 0;
     // 测量每个字符的宽度
     for (int i = 0; i < test_chars_len; i++) {
-#ifdef _WIN32
-      char16_t ch = static_cast<char16_t>(test_chars.at(i));
-#else
-      char16_t ch = test_chars.at(i);
-#endif
-      size_t u8_len = simdutf::utf8_length_from_utf16(&ch, 1);
-      char* u8_text = new char[u8_len + 1];
-      size_t count = simdutf::convert_utf16_to_utf8(&ch, 1, u8_text);
-      u8_text[u8_len] = '\0';
-      widths[i] = m_measurer_->measureWidth(u8_text, false);
+      widths[i] = m_measurer_->measureWidth(test_chars.substr(i, 1), false);
       sum += widths[i];
     }
     // 计算平均宽度和标准差
@@ -186,7 +177,7 @@ namespace NS_SWEETEDITOR {
     LOGD("m_is_monospace_: %s", m_is_monospace_ ? "true" : "false");
   }
 
-  float TextLayout::measureWidth(const U8String& text, bool is_bold) {
+  float TextLayout::measureWidth(const U16String& text, bool is_bold) {
     const auto it = m_text_widths_.find(text);
     if (it == m_text_widths_.end()) {
       float width = m_measurer_->measureWidth(text, is_bold);
@@ -196,7 +187,7 @@ namespace NS_SWEETEDITOR {
     return it->second;
   }
 
-  int64_t TextLayout::createTextId(const U8String& text) {
+  int64_t TextLayout::createTextId(const U16String& text) {
     int64_t id = m_text_id_counter_++;
     m_text_mapping_.insert_or_assign(id, text);
     return id;

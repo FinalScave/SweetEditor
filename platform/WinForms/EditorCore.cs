@@ -21,7 +21,7 @@ namespace SweetEditor {
 			nativeHandle = _CreateDocument(text);
 		}
 
-		[DllImport(DLL_NAME, EntryPoint = "create_document_from_utf8", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_NAME, EntryPoint = "create_document_from_utf8", CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr _CreateDocument(string text);
 	}
 
@@ -205,24 +205,24 @@ namespace SweetEditor {
 		}
 
 		public EditorRenderModel BuildRenderModel() {
-			IntPtr utf8Ptr = _BuildRenderModel(nativeHandle);
-			string json = Marshal.PtrToStringAnsi(utf8Ptr)!;
-			_FreeCString(utf8Ptr);
+			IntPtr utf16Ptr = _BuildRenderModel(nativeHandle);
+			string json = Marshal.PtrToStringUni(utf16Ptr)!;
+			_FreeCString(utf16Ptr);
 			return JsonSerializer.Deserialize<EditorRenderModel>(json, serializerOptions);
 		}
 
 		public GestureResult HandleGestureEvent(GestureEvent gestureEvent) {
-			IntPtr utf8Ptr = _HandleGestureEvent(nativeHandle, (uint)gestureEvent.Type, (uint)gestureEvent.Points.Count, gestureEvent.GetPointsArray());
-			string json = Marshal.PtrToStringAnsi(utf8Ptr)!;
-			_FreeCString(utf8Ptr);
+			IntPtr utf16Ptr = _HandleGestureEvent(nativeHandle, (uint)gestureEvent.Type, (uint)gestureEvent.Points.Count, gestureEvent.GetPointsArray());
+			string json = Marshal.PtrToStringUni(utf16Ptr)!;
+			_FreeCString(utf16Ptr);
 			Debug.WriteLine(json);
 			return JsonSerializer.Deserialize<GestureResult>(json, serializerOptions);
 		}
 
 		public string GetVisualRunText(long textId) {
-			IntPtr utf8Ptr = _GetVisualRunText(nativeHandle, textId);
-			string text = Marshal.PtrToStringAnsi(utf8Ptr);
-			_FreeCString(utf8Ptr);
+			IntPtr utf16Ptr = _GetVisualRunText(nativeHandle, textId);
+			string text = Marshal.PtrToStringUni(utf16Ptr);
+			_FreeCString(utf16Ptr);
 			return text;
 		}
 
@@ -253,13 +253,13 @@ namespace SweetEditor {
 		[DllImport(DLL_NAME, EntryPoint = "handle_editor_gesture_event", CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr _HandleGestureEvent(IntPtr handle, uint type, uint pointerCount, float[] points);
 
-		[DllImport(DLL_NAME, EntryPoint = "build_editor_render_model", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_NAME, EntryPoint = "build_editor_render_model", CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr _BuildRenderModel(IntPtr handle);
 
-		[DllImport(DLL_NAME, EntryPoint = "get_editor_visual_run_text", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_NAME, EntryPoint = "get_editor_visual_run_text", CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr _GetVisualRunText(IntPtr handle, long textId);
 
-		[DllImport(DLL_NAME, EntryPoint = "free_c_string", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_NAME, EntryPoint = "free_u16_string", CallingConvention = CallingConvention.Cdecl)]
 		private static extern void _FreeCString(IntPtr cstringPtr);
 	}
 }

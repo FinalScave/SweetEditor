@@ -56,7 +56,7 @@ namespace NS_SWEETEDITOR {
     model.lines = std::move(m_text_layout_->composeVisibleVisualLines());
   }
 
-  const U8String& EditorCore::getVisualRunText(int64_t run_text_id) const {
+  const U16String& EditorCore::getVisualRunText(int64_t run_text_id) const {
     return m_text_layout_->getTextById(run_text_id);
   }
 

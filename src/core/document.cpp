@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <simdutf/simdutf.h>
 #include "document.h"
+#include "utility.h"
 
 namespace NS_SWEETEDITOR {
   // ================================================== Document ===================================================
@@ -26,16 +27,29 @@ namespace NS_SWEETEDITOR {
     return getU8Text(0, m_total_bytes_);
   }
 
+  U16String Document::getU16Text() {
+    U8String utf8_text = getU8Text(0, m_total_bytes_);
+    U16String result;
+    StrUtil::convertUTF8ToUTF16(utf8_text, result);
+    return result;
+  }
+
   size_t Document::getLineCount() const {
     return m_logical_lines_.size();
   }
 
-  U8String Document::getLineU8Text(size_t line) const {
+  U16String Document::getLineU16Text(size_t line) const {
     if (line >= m_logical_lines_.size()) {
       throw std::out_of_range("Document::getLineU16Text line index out of range");
     }
+    if (!m_logical_lines_[line].is_char_dirty) {
+      return m_logical_lines_[line].cached_text;
+    }
     const size_t byte_length = getByteLengthOfLine(line);
-    return getU8Text(m_logical_lines_[line].start_byte, byte_length);
+    U8String utf8_text = getU8Text(m_logical_lines_[line].start_byte, byte_length);
+    U16String result;
+    StrUtil::convertUTF8ToUTF16(utf8_text, result);
+    return result;
   }
 
   uint32_t Document::getLineColumns(size_t line) {
@@ -263,8 +277,8 @@ namespace NS_SWEETEDITOR {
   void Document::updateDirtyLine(size_t line, LogicalLine& logical_line) {
     if (logical_line.is_char_dirty) {
       const size_t byte_length = getByteLengthOfLine(line);
-      U8String text = getU8Text(logical_line.start_byte, byte_length);
-      logical_line.cached_text = std::move(text);
+      U8String u8_text = getU8Text(logical_line.start_byte, byte_length);
+      StrUtil::convertUTF8ToUTF16(u8_text, logical_line.cached_text);
       if (line > 0) {
         LogicalLine& prev_line = m_logical_lines_[line - 1];
         if (prev_line.is_char_dirty) {

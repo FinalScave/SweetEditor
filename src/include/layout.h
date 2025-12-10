@@ -23,7 +23,7 @@ namespace NS_SWEETEDITOR {
   /// 文本布局后的断行数据
   struct TextLine {
     /// 一行的文本
-    U8String text;
+    U16String text;
   };
 
   struct VisibleRegion {
@@ -45,7 +45,7 @@ namespace NS_SWEETEDITOR {
     /// @param text 文本内容
     /// @param style_id 文本样式
     /// @return 测量后的宽度
-    virtual float measureWidth(const U8String& text, uint32_t style_id) = 0;
+    virtual float measureWidth(const U16String& text, uint32_t style_id) = 0;
 
     /// 获取字体度量信息
     /// @return 字体度量信息
@@ -69,7 +69,7 @@ namespace NS_SWEETEDITOR {
 
     Vector<VisualLine> composeVisibleVisualLines();
 
-    const U8String& getTextById(int64_t text_id);
+    const U16String& getTextById(int64_t text_id);
 
     void resetMeasurer();
   private:
@@ -82,13 +82,13 @@ namespace NS_SWEETEDITOR {
     bool m_is_monospace_ {true};
     float m_line_height_ {20};
     // text_id 到相应文本的映射
-    HashMap<int64_t, U8String> m_text_mapping_;
+    HashMap<int64_t, U16String> m_text_mapping_;
     int64_t m_text_id_counter_ {0};
     // 每个字符的测量宽度缓存
-    HashMap<U8String, float> m_text_widths_;
+    HashMap<U16String, float> m_text_widths_;
 
-    float measureWidth(const U8String& text, bool is_bold);
-    int64_t createTextId(const U8String& text);
+    float measureWidth(const U16String& text, bool is_bold);
+    int64_t createTextId(const U16String& text);
   };
 }
 

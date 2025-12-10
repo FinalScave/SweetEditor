@@ -18,8 +18,8 @@
 
 extern "C" {
 
-typedef float (__stdcall* MeasureTextWidth)(const char* text, uint32_t style_id);
-typedef float (__stdcall* GetFontMetrics)(float* arr, size_t length);
+typedef float (__stdcall* MeasureTextWidth)(const U16Char* text, uint32_t style_id);
+typedef void (__stdcall* GetFontMetrics)(float* arr, size_t length);
 
 /// 创建Document类并返回其句柄
 /// @param text UTF8文本内容
@@ -49,7 +49,7 @@ EDITOR_API size_t get_document_line_count(intptr_t document_handle);
 /// @param document_handle Document句柄
 /// @param line 行号
 /// @return 指定行的UTF8文本内容
-EDITOR_API const char* get_document_line_text(intptr_t document_handle, size_t line);
+EDITOR_API const U16Char* get_document_line_text(intptr_t document_handle, size_t line);
 
 /// 创建EditorCore类并返回其句柄
 /// @param touch_slop 单击移动的阈值
@@ -80,7 +80,7 @@ EDITOR_API void set_editor_document(intptr_t editor_handle, intptr_t document_ha
 /// @param pointer_count 手指点数
 /// @param points 每个点的数据
 /// @return 处理结果（以JSON格式呈现）
-EDITOR_API const char* handle_editor_gesture_event(intptr_t editor_handle, uint8_t type, uint8_t pointer_count, float* points);
+EDITOR_API const U16Char* handle_editor_gesture_event(intptr_t editor_handle, uint8_t type, uint8_t pointer_count, float* points);
 
 /// 重置editor文本测量结果（更新字体时调用）
 /// @param editor_handle EditorCore句柄
@@ -89,17 +89,17 @@ EDITOR_API void reset_editor_text_measurer(intptr_t editor_handle);
 /// 构建editor一帧的渲染模型
 /// @param editor_handle EditorCore句柄
 /// @return 渲染模型（以JSON格式呈现）
-EDITOR_API const char* build_editor_render_model(intptr_t editor_handle);
+EDITOR_API const U16Char* build_editor_render_model(intptr_t editor_handle);
 
 /// 获取指定ID的视觉文本
 /// @param editor_handle EditorCore句柄
 /// @param run_text_id 文本ID（渲染模型中的ID）
 /// @return UTF8文本
-EDITOR_API const char* get_editor_visual_run_text(intptr_t editor_handle, int64_t run_text_id);
+EDITOR_API const U16Char* get_editor_visual_run_text(intptr_t editor_handle, int64_t run_text_id);
 
 /// 释放C++侧的字符串内存
 /// @param string_ptr 字符串指针
-EDITOR_API void free_c_string(intptr_t string_ptr);
+EDITOR_API void free_u16_string(intptr_t string_ptr);
 
 #ifdef _WIN32
 /// 设置Dll调用时的Crash日志输出，仅Windows可用

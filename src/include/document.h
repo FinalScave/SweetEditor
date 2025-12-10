@@ -33,7 +33,7 @@ namespace NS_SWEETEDITOR {
     /// 当前行在全文中的起始字符偏移，dirty时更新
     size_t start_char {0};
     /// 当前行文本的缓存（不包括换行符），dirty时更新
-    U8String cached_text;
+    U16String cached_text;
     /// 当前行文本数据是否已经被标记为dirty，需要刷新
     bool is_char_dirty {false};
     /// 当前行的渲染高度
@@ -52,6 +52,9 @@ namespace NS_SWEETEDITOR {
     /// 获取当前文档的全部文本内容（UTF8编码）
     virtual U8String getU8Text();
 
+    /// 获取当前文档的全部文本内容（UTF16编码）
+    virtual U16String getU16Text();
+
     /// 获取当前文档的总行数
     /// @return 总行数
     size_t getLineCount() const;
@@ -59,7 +62,7 @@ namespace NS_SWEETEDITOR {
     /// 获取指定行的UTF8文本
     /// @param line 行号
     /// @return 指定行的文本内容
-    U8String getLineU8Text(size_t line) const;
+    U16String getLineU16Text(size_t line) const;
 
     /// 获取指定行的column数量（字符数）
     /// @param line 行号

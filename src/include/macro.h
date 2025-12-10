@@ -41,10 +41,15 @@ using HashSet = std::unordered_set<T, Hash, EqualTo>;
 
 using U8String = std::string;
 #ifdef _WIN32
-using U16String = std::wstring;
+using U16Char = wchar_t;
+#define U16_NONE L""
+#define CHAR16_PTR(ptr) (char16_t*) ptr
 #else
-using U16String = std::u16string;
+using U16Char = char16_t;
+#define U16_NONE u""
+#define CHAR16_PTR(ptr) ptr
 #endif
+using U16String = std::basic_string<U16Char>;
 
 /// lambda或函数签名检查（允许返回类型转换）
 template <typename T, typename Ret, typename... Args>

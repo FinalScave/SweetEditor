@@ -3,6 +3,7 @@
 //
 #include <chrono>
 #include <cstdarg>
+#include <simdutf/simdutf.h>
 #include "utility.h"
 
 namespace NS_SWEETEDITOR {
@@ -42,5 +43,18 @@ namespace NS_SWEETEDITOR {
     U8String result = vFormatString(format, args);
     va_end(args);
     return result;
+  }
+
+  void StrUtil::convertUTF8ToUTF16(const U8String& utf8_str, U16String& result) {
+    size_t utf16_len = simdutf::utf16_length_from_utf8(utf8_str.c_str(), utf8_str.length());
+    result.reserve(utf16_len);
+    simdutf::convert_utf8_to_utf16(utf8_str.c_str(), utf8_str.length(), CHAR16_PTR(result.data()));
+  }
+
+  void StrUtil::convertUTF8ToUTF16(const U8String& utf8_str, U16Char** result) {
+    size_t utf16_len = simdutf::utf16_length_from_utf8(utf8_str.c_str(), utf8_str.length());
+    U16Char* u16_chars = new U16Char[utf16_len];
+    simdutf::convert_utf8_to_utf16(utf8_str.c_str(), utf8_str.length(), CHAR16_PTR(u16_chars));
+    result = &u16_chars;
   }
 }
