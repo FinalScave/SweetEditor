@@ -47,14 +47,31 @@ namespace NS_SWEETEDITOR {
 
   void StrUtil::convertUTF8ToUTF16(const U8String& utf8_str, U16String& result) {
     size_t utf16_len = simdutf::utf16_length_from_utf8(utf8_str.c_str(), utf8_str.length());
-    result.reserve(utf16_len);
+    result.resize(utf16_len);
     simdutf::convert_utf8_to_utf16(utf8_str.c_str(), utf8_str.length(), CHAR16_PTR(result.data()));
   }
 
   void StrUtil::convertUTF8ToUTF16(const U8String& utf8_str, U16Char** result) {
     size_t utf16_len = simdutf::utf16_length_from_utf8(utf8_str.c_str(), utf8_str.length());
-    U16Char* u16_chars = new U16Char[utf16_len];
-    simdutf::convert_utf8_to_utf16(utf8_str.c_str(), utf8_str.length(), CHAR16_PTR(u16_chars));
-    result = &u16_chars;
+    *result = new U16Char[utf16_len + 1];
+    simdutf::convert_utf8_to_utf16(utf8_str.c_str(), utf8_str.length(), CHAR16_PTR(*result));
+    (*result)[utf16_len] = 0;
+  }
+
+  void StrUtil::convertUTF16ToUTF8(const U16String& utf16_str, U8String& result) {
+    size_t utf8_len = simdutf::utf8_length_from_utf16(CHAR16_PTR(utf16_str.c_str()), utf16_str.length());
+    result.resize(utf8_len);
+    simdutf::convert_utf16_to_utf8(CHAR16_PTR(utf16_str.c_str()), utf16_str.length(), result.data());
+  }
+
+  U16Char* StrUtil::allocU16Chars(const U16String& utf16_str) {
+    size_t length = utf16_str.length();
+    U16Char* result = new U16Char[length + 1];
+#ifdef _MSC_VER
+    wcscpy_s(result, length + 1, utf16_str.c_str());
+#else
+    std::wcscpy(result, utf16_str.c_str());
+#endif
+    return result;
   }
 }

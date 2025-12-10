@@ -22,9 +22,9 @@ typedef float (__stdcall* MeasureTextWidth)(const U16Char* text, uint32_t style_
 typedef void (__stdcall* GetFontMetrics)(float* arr, size_t length);
 
 /// 创建Document类并返回其句柄
-/// @param text UTF8文本内容
+/// @param text UTF16文本内容
 /// @return Document句柄
-EDITOR_API intptr_t create_document_from_utf8(const char* text);
+EDITOR_API intptr_t create_document_from_utf16(const U16Char* text);
 
 /// 创建Document类并返回其句柄（从本地文件创建）
 /// @param path 本地文件路径

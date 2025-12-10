@@ -50,6 +50,16 @@ namespace NS_SWEETEDITOR {
     /// @param utf8_str UTF8文本
     /// @param result 结果UTF16
     static void convertUTF8ToUTF16(const U8String& utf8_str, U16Char** result);
+
+    /// 将UTF16文本转换为UTF8
+    /// @param utf16_str UTF16文本
+    /// @param result 结果UTF8
+    static void convertUTF16ToUTF8(const U16String& utf16_str, U8String& result);
+
+    /// 将UTF16文本拷贝生成长生命周期的U16Char字符串
+    /// @param utf16_str UTF16文本
+    /// @return  U16Char*
+    static U16Char* allocU16Chars(const U16String& utf16_str);
   };
 }
 

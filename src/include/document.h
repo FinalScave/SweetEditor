@@ -45,6 +45,7 @@ namespace NS_SWEETEDITOR {
   public:
     explicit Document(U8String&& original_string);
     explicit Document(const U8String& original_string);
+    explicit Document(const U16String& original_string);
     explicit Document(UPtr<Buffer>&& original_buffer);
 
     virtual ~Document();

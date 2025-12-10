@@ -106,7 +106,7 @@ private:
 
 extern "C" {
 
-intptr_t create_document_from_utf8(const char* text) {
+intptr_t create_document_from_utf16(const U16Char* text) {
   return makeCPtrHolderToIntPtr<Document>(text);
 }
 
@@ -145,9 +145,7 @@ const U16Char* get_document_line_text(intptr_t document_handle, size_t line) {
     return U16_NONE;
   }
   U16String u16_text = document->getLineU16Text(line);
-  static U16String result_u16;
-  result_u16 = u16_text;
-  return result_u16.c_str();
+  return StrUtil::allocU16Chars(u16_text);
 }
 
 intptr_t create_editor(float touch_slop, int64_t double_tap_timeout, MeasureTextWidth measurer_func, GetFontMetrics metrics_func) {
@@ -229,9 +227,7 @@ const U16Char* get_editor_visual_run_text(intptr_t editor_handle, int64_t run_te
     return U16_NONE;
   }
   U16String u16_text = editor_core->getVisualRunText(run_text_id);
-  static U16String result_u16;
-  result_u16 = u16_text;
-  return result_u16.c_str();
+  return StrUtil::allocU16Chars(u16_text);
 }
 
 void free_u16_string(intptr_t string_ptr) {

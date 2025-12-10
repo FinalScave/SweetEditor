@@ -8,7 +8,7 @@ namespace SweetEditor
         public Form1()
         {
             InitializeComponent();
-
+            //Thread.Sleep(5000);
 			Document document = new Document("AAAAA\nBBB");
             Debug.WriteLine("new Document");
 

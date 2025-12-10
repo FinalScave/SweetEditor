@@ -17,6 +17,13 @@ namespace NS_SWEETEDITOR {
     rebuildBufferSegments();
   }
 
+  Document::Document(const U16String& original_string) {
+    U8String utf8_text;
+    StrUtil::convertUTF16ToUTF8(original_string, utf8_text);
+    m_original_buffer_ = makeUPtr<U8StringBuffer>(std::move(utf8_text));
+    rebuildBufferSegments();
+  }
+
   Document::Document(UPtr<Buffer>&& original_buffer): m_original_buffer_(std::move(original_buffer)) {
     rebuildBufferSegments();
   }
