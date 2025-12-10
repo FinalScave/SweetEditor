@@ -10,8 +10,9 @@ namespace NS_SWEETEDITOR {
   }
 
   EditorCore::EditorCore(const EditorConfig& config, const Ptr<TextMeasurer>& measurer): m_config_(config), m_measurer_(measurer) {
+    m_decorations_ = makePtr<DecorationManager>();
     m_gesture_handler_ = makeUPtr<GestureHandler>(config.touch_config);
-    m_text_layout_ = makeUPtr<TextLayout>(measurer);
+    m_text_layout_ = makeUPtr<TextLayout>(measurer, m_decorations_);
     LOGD("EditorCore::EditorCore(), config = %s", config.dump().c_str());
   }
 
@@ -52,8 +53,12 @@ namespace NS_SWEETEDITOR {
     m_text_layout_->resetMeasurer();
   }
 
+  Ptr<StyleRegistry> EditorCore::getStyleRegistry() const {
+    return m_decorations_->getStyleRegistry();
+  }
+
   void EditorCore::buildRenderModel(EditorRenderModel& model) {
-    model.lines = std::move(m_text_layout_->composeVisibleVisualLines());
+    m_text_layout_->composeRenderModel(model);
   }
 
   const U16String& EditorCore::getVisualRunText(int64_t run_text_id) const {
@@ -87,7 +92,11 @@ namespace NS_SWEETEDITOR {
     LOGD("EditorCore::setScroll, m_view_state_ = %s", m_view_state_.dump().c_str());
   }
 
-  ViewState EditorCore::getViewState() {
+  ViewState EditorCore::getViewState() const {
     return m_view_state_;
+  }
+
+  EditorParams& EditorCore::getEditorParams() const {
+    return m_text_layout_->getEditorParams();
   }
 }

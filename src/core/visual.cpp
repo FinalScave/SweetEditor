@@ -34,7 +34,7 @@ namespace NS_SWEETEDITOR {
 
   U8String VisualRun::dump() const {
     return "VisualRun {type = " + dumpEnum(type) + ", x = " + std::to_string(x) + ", y = " + std::to_string(y)
-      + ", text_id = " + std::to_string(text_id) + ", style_id = " + std::to_string(style_id) + "}";
+      + "style_id = " + std::to_string(style_id) + " }";
   }
 
   U8String VisualLine::dump() const {
@@ -62,6 +62,11 @@ namespace NS_SWEETEDITOR {
   }
 
   U8String EditorRenderModel::toJson() const {
+    nlohmann::json root = *this;
+    return root.dump(2);
+  }
+
+  U8String EditorParams::toJson() const {
     nlohmann::json root = *this;
     return root.dump(2);
   }

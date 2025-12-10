@@ -9,7 +9,7 @@ namespace SweetEditor
         {
             InitializeComponent();
             //Thread.Sleep(5000);
-			Document document = new Document("AAAAA\nBBB");
+			Document document = new Document("AAAAA\nBBB\nCCCC\nDDDD\nEEEEEEEE\nFFFFFFFFFFF");
             Debug.WriteLine("new Document");
 
             editorControl1.LoadDocument(document);

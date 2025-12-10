@@ -28,6 +28,10 @@ namespace NS_SWEETEDITOR {
   struct VisualRun {
     /// 片段类型
     VisualRunType type {VisualRunType::TEXT};
+    /// 在行中的起始列
+    size_t column {0};
+    /// 在行中的字符长度
+    size_t length {0};
     /// 绘制的起始横坐标
     float x {0};
     /// 绘制的起始纵坐标
@@ -44,6 +48,8 @@ namespace NS_SWEETEDITOR {
   struct VisualLine {
     /// 逻辑行行号
     size_t logical_line {0};
+    /// 行号位置
+    PointF line_number_position;
     /// 视觉行包含的文本片段
     Vector<VisualRun> runs;
 
@@ -80,6 +86,8 @@ namespace NS_SWEETEDITOR {
 
   /// 编辑器渲染模型
   struct EditorRenderModel {
+    /// 行号分割线位置
+    float split_x {0};
     /// 当前行背景坐标
     PointF current_line;
     /// 视觉上要渲染的文字行
@@ -90,6 +98,22 @@ namespace NS_SWEETEDITOR {
     Vector<GuideLine> guide_lines;
 
     U8String dump() const;
+    U8String toJson() const;
+  };
+
+  /// 布局渲染参数
+  struct EditorParams {
+    /// 字体高度
+    float font_height {20};
+    /// 行距(add)
+    float line_spacing_add {0};
+    /// 行距(mult)
+    float line_spacing_mult {1};
+    /// 行号边距
+    float line_number_margin {10};
+    /// 行号宽度
+    float line_number_width {10};
+
     U8String toJson() const;
   };
 
@@ -105,14 +129,15 @@ namespace NS_SWEETEDITOR {
     {VisualRunType::PHANTOM_TEXT, "PHANTOM_TEXT"},
   })
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VisualRun, type, x, y, text_id, style_id)
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VisualLine, logical_line, runs)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VisualLine, logical_line, line_number_position, runs)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Cursor, position, show_dragger)
   NLOHMANN_JSON_SERIALIZE_ENUM(GuideLineDirection, {
     {GuideLineDirection::VERTICAL, "VERTICAL"},
     {GuideLineDirection::HORIZONTAL, "HORIZONTAL"},
   })
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GuideLine, direction, start, end)
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(EditorRenderModel, current_line, lines, cursor, guide_lines)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(EditorRenderModel, split_x, current_line, lines, cursor, guide_lines)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(EditorParams, font_height, line_spacing_add, line_spacing_mult, line_number_margin, line_number_width)
 }
 
 #endif //SWEETEDITOR_VISUAL_H

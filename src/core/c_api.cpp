@@ -142,7 +142,7 @@ size_t get_document_line_count(intptr_t document_handle) {
 const U16Char* get_document_line_text(intptr_t document_handle, size_t line) {
   Ptr<Document> document = getCPtrHolderValue<Document>(document_handle);
   if (document == nullptr) {
-    return U16_NONE;
+    return CHAR16_NONE;
   }
   U16String u16_text = document->getLineU16Text(line);
   return StrUtil::allocU16Chars(u16_text);
@@ -185,7 +185,7 @@ const U16Char* handle_editor_gesture_event(intptr_t editor_handle, uint8_t type,
     float* points) {
   Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
   if (editor_core == nullptr) {
-    return U16_NONE;
+    return CHAR16_NONE;
   }
   GestureEvent event;
   event.type = static_cast<EventType>(type);
@@ -211,7 +211,7 @@ void reset_editor_text_measurer(intptr_t editor_handle) {
 const U16Char* build_editor_render_model(intptr_t editor_handle) {
   Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
   if (editor_core == nullptr) {
-    return U16_NONE;
+    return CHAR16_NONE;
   }
   EditorRenderModel model;
   editor_core->buildRenderModel(model);
@@ -224,10 +224,21 @@ const U16Char* build_editor_render_model(intptr_t editor_handle) {
 const U16Char* get_editor_visual_run_text(intptr_t editor_handle, int64_t run_text_id) {
   Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
   if (editor_core == nullptr) {
-    return U16_NONE;
+    return CHAR16_NONE;
   }
   U16String u16_text = editor_core->getVisualRunText(run_text_id);
   return StrUtil::allocU16Chars(u16_text);
+}
+
+const U16Char* get_editor_params(intptr_t editor_handle) {
+  Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
+  if (editor_core == nullptr) {
+    return CHAR16_NONE;
+  }
+  U8String u8_text = editor_core->getEditorParams().toJson();
+  U16Char* result;
+  StrUtil::convertUTF8ToUTF16(u8_text, &result);
+  return result;
 }
 
 void free_u16_string(intptr_t string_ptr) {

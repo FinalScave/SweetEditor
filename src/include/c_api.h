@@ -97,6 +97,11 @@ EDITOR_API const U16Char* build_editor_render_model(intptr_t editor_handle);
 /// @return UTF8文本
 EDITOR_API const U16Char* get_editor_visual_run_text(intptr_t editor_handle, int64_t run_text_id);
 
+/// 获取编辑器的渲染参数
+/// @param editor_handle EditorCore句柄
+/// @return 渲染参数JSON
+EDITOR_API const U16Char* get_editor_params(intptr_t editor_handle);
+
 /// 释放C++侧的字符串内存
 /// @param string_ptr 字符串指针
 EDITOR_API void free_u16_string(intptr_t string_ptr);

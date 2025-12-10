@@ -8,6 +8,7 @@
 #include <cstdint>
 #include "foundation.h"
 #include "buffer.h"
+#include "visual.h"
 
 namespace NS_SWEETEDITOR {
 	/// 文本片段的类型
@@ -36,8 +37,14 @@ namespace NS_SWEETEDITOR {
     U16String cached_text;
     /// 当前行文本数据是否已经被标记为dirty，需要刷新
     bool is_char_dirty {false};
+    /// 当前行起始y坐标
+    float start_y {-1};
     /// 当前行的渲染高度
     float height {-1};
+    /// 视觉行布局数据
+    Vector<VisualLine> visual_lines;
+    /// 当前行布局是否已经被标记为dirty，需要重建
+    bool is_layout_dirty {true};
   };
 
   /// 编辑器的文本对象

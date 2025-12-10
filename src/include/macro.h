@@ -42,11 +42,13 @@ using HashSet = std::unordered_set<T, Hash, EqualTo>;
 using U8String = std::string;
 #ifdef _WIN32
 using U16Char = wchar_t;
-#define U16_NONE L""
+#define CHAR16_NONE L""
+#define CHAR16(ch) L##ch
 #define CHAR16_PTR(ptr) (char16_t*) ptr
 #else
 using U16Char = char16_t;
-#define U16_NONE u""
+#define CHAR16_NONE u""
+#define CHAR16(ch) u##ch
 #define CHAR16_PTR(ptr) ptr
 #endif
 using U16String = std::basic_string<U16Char>;

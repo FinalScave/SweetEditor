@@ -20,20 +20,20 @@ namespace NS_SWEETEDITOR {
     WORD_BREAK,
   };
 
-  /// 文本布局后的断行数据
-  struct TextLine {
-    /// 一行的文本
-    U16String text;
-  };
-
-  struct VisibleRegion {
-    size_t start_line {0};
-    size_t end_line {0};
-  };
-
+  /// 字体度量信息
   struct FontMetrics {
     float ascent;
     float descent;
+  };
+
+  /// 可见行区域信息
+  struct VisibleLineInfo {
+    /// 可见的第一行行号索引
+    size_t first_line {0};
+    /// 可见的最后一行行号索引
+    size_t last_line {0};
+    /// 可见的第一行纵坐标(只有部分可见情况下该坐标为负值)
+    float first_line_y {0};
   };
 
   /// 文本宽度测量接口，由各平台实现
@@ -55,7 +55,7 @@ namespace NS_SWEETEDITOR {
   /// 文本布局引擎
   class TextLayout {
   public:
-    explicit TextLayout(const Ptr<TextMeasurer>& measurer);
+    TextLayout(const Ptr<TextMeasurer>& measurer, const Ptr<DecorationManager>& decoration_manager);
 
     void loadDocument(const Ptr<Document>& document);
 
@@ -65,13 +65,15 @@ namespace NS_SWEETEDITOR {
 
     void setWrapMode(WrapMode mode);
 
-    Vector<TextLine> layoutLine(size_t line);
+    void layoutLine(size_t index, LogicalLine& logical_line);
 
-    Vector<VisualLine> composeVisibleVisualLines();
+    void composeRenderModel(EditorRenderModel& model);
 
     const U16String& getTextById(int64_t text_id);
 
     void resetMeasurer();
+
+    EditorParams& getEditorParams();
   private:
     Ptr<TextMeasurer> m_measurer_;
     Ptr<Document> m_document_;
@@ -79,8 +81,10 @@ namespace NS_SWEETEDITOR {
     Viewport m_viewport_;
     ViewState m_view_state_;
     WrapMode m_wrap_mode_ {WrapMode::NONE};
+    EditorParams m_params_;
     bool m_is_monospace_ {true};
-    float m_line_height_ {20};
+    float m_number_width_;
+    float m_space_width_;
     // text_id 到相应文本的映射
     HashMap<int64_t, U16String> m_text_mapping_;
     int64_t m_text_id_counter_ {0};
@@ -89,6 +93,10 @@ namespace NS_SWEETEDITOR {
 
     float measureWidth(const U16String& text, bool is_bold);
     int64_t createTextId(const U16String& text);
+    void removeTextId(int64_t id);
+    VisibleLineInfo computeVisibleLineInfo();
+    void cropVisualLineRuns(VisualLine& visual_line);
+    float computeLineNumberWidth() const;
   };
 }
 

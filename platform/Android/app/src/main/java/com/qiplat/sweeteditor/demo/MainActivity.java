@@ -1,6 +1,7 @@
 package com.qiplat.sweeteditor.demo;
 
 import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,5 +18,7 @@ public class MainActivity extends AppCompatActivity {
         sweetEditor = findViewById(R.id.editor);
         Document document = new Document("AAAABBB\njhhuihii");
         sweetEditor.loadDocument(document);
+        TextView textView;
+        textView.setLineSpacing();
     }
 }

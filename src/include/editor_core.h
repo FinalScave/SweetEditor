@@ -44,6 +44,10 @@ namespace NS_SWEETEDITOR {
     /// 重置文本测量，一般在编辑器重新设置字体的时候调用
     void resetMeasurer();
 
+    /// 获取编辑器的高亮样式注册表
+    /// @return 高亮样式注册表
+    Ptr<StyleRegistry> getStyleRegistry() const;
+
     /// 构建编辑器渲染模型
     /// @param model 传入的 EditorRenderModel
     void buildRenderModel(EditorRenderModel& model);
@@ -76,11 +80,15 @@ namespace NS_SWEETEDITOR {
     void setScroll(float scroll_x, float scroll_y);
 
     /// 获取编辑器当前状态，包含缩放，滚动等数据
-    ViewState getViewState();
+    ViewState getViewState() const;
+
+    /// 获取编辑器渲染参数
+    EditorParams& getEditorParams() const;
   private:
     EditorConfig m_config_;
     Ptr<TextMeasurer> m_measurer_;
     Ptr<Document> m_document_;
+    Ptr<DecorationManager> m_decorations_;
     UPtr<GestureHandler> m_gesture_handler_;
     UPtr<TextLayout> m_text_layout_;
     // 每个逻辑行渲染高度的缓存

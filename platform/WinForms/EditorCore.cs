@@ -136,6 +136,8 @@ namespace SweetEditor {
 	public struct VisualLine {
 		[JsonPropertyName("logical_line")]
 		public int LogicalLine { get; set; }
+		[JsonPropertyName("line_number_position")]
+		public PointF LineNumberPosition { get; set; }
 		[JsonPropertyName("runs")]
 		public List<VisualRun> Runs { get; set; }
 	}
@@ -162,6 +164,8 @@ namespace SweetEditor {
 	}
 
 	public struct EditorRenderModel {
+		[JsonPropertyName("split_x")]
+		public float SplitX { get; set; }
 		[JsonPropertyName("current_line")]
 		public PointF CurrentLine { get; set; }
 		[JsonPropertyName("lines")]
@@ -208,6 +212,7 @@ namespace SweetEditor {
 			IntPtr utf16Ptr = _BuildRenderModel(nativeHandle);
 			string json = Marshal.PtrToStringUni(utf16Ptr)!;
 			_FreeCString(utf16Ptr);
+			Debug.WriteLine(json);
 			return JsonSerializer.Deserialize<EditorRenderModel>(json, serializerOptions);
 		}
 

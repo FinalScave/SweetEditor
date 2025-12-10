@@ -58,7 +58,9 @@ namespace SweetEditor {
 		private Font italicFont = new Font("Consolas", 11f, FontStyle.Italic);
 		private Font boldItalicFont = new Font("Consolas", 11f, FontStyle.Bold | FontStyle.Italic);
 		private Graphics textGraphics;
+		private Brush textBrush = Brushes.Black;
 		private EditorRenderModel? renderModel;
+		private int currentDrawingLineNumber = -1;
 
 		public EditorControl() {
 			InitializeComponent();
@@ -99,9 +101,11 @@ namespace SweetEditor {
 			e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
 			EditorRenderModel renderModel = (EditorRenderModel)this.renderModel;
+			DrawLineSplit(e.Graphics, renderModel.SplitX);
 			List<VisualLine> lines = renderModel.VisualLines;
 			if (lines != null) {
 				foreach (var line in lines) {
+					DrawLineNumber(e.Graphics, line);
 					foreach (var run in line.Runs) {
 						DrawVisualRun(e.Graphics, run);
 					}
@@ -186,11 +190,21 @@ namespace SweetEditor {
 			base.OnMouseWheel(e);
 		}
 
+		private void DrawLineNumber(Graphics g, VisualLine visualLine) {
+			int newLineNumber = visualLine.LogicalLine + 1;
+			if (newLineNumber != currentDrawingLineNumber) {
+				PointF position = visualLine.LineNumberPosition;
+				g.DrawString(newLineNumber.ToString(), regularFont, textBrush, position.X, position.Y);
+			}
+		}
+
+		private void DrawLineSplit(Graphics g, float x) {
+			g.DrawLine(Pens.Gray, x, 0, x, this.ClientSize.Height);
+		}
+
 		private void DrawVisualRun(Graphics g, VisualRun visualRun) {
-			var brush = new SolidBrush(Color.Black);
-			var text = editorCore.GetVisualRunText(visualRun.TextId);
-			g.DrawString(text, regularFont, brush, visualRun.X, visualRun.Y);
-			brush.Dispose();
+			string text = editorCore.GetVisualRunText(visualRun.TextId);
+			g.DrawString(text, regularFont, textBrush, visualRun.X, visualRun.Y);
 		}
 
 		private void RebuildRenderModelAndInvalidate() {
